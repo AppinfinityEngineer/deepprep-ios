@@ -119,3 +119,16 @@ curl.exe -X POST https://deepprep-ios-dev.onrender.com/api/free-scan/create ^
   -d "{"deviceId":"branch4-nick-sharp-001","company":"Confused.com","role":"Senior Data Engineer","interviewers":[{"name":"Nick Sharp","title":"Director of Data & Technology"}]}"
 ```
 
+
+
+### Development-only free scan reset
+
+When `APP_ENV=development` and `ALLOW_DEV_MOCK_UNLOCK=true`, the backend exposes a dev-only reset endpoint for Expo testing:
+
+```bash
+curl -X POST "$BASE_URL/api/dev/reset-free-scan" \
+  -H "Content-Type: application/json" \
+  -d '{"deviceId":"YOUR_TEST_DEVICE_ID"}'
+```
+
+This route deletes the test device row plus related reports, interviews, usage, and entitlements. It returns 404 outside development mode.

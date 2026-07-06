@@ -25,6 +25,7 @@ interface AppState {
   unlockPro: () => Promise<Entitlement>;
   restorePurchases: () => Promise<Entitlement>;
   refreshReports: () => Promise<void>;
+  devResetForTesting: () => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -102,6 +103,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return ent;
   }, [deviceId]);
 
+  const devResetForTesting = useCallback(async () => {
+    const oldId = deviceId;
+    if (oldId) {
+      try {
+        await DeepPrepApi.devResetFreeScan(oldId);
+      } catch {
+        // Keep local reset useful even if the backend dev endpoint is not yet deployed.
+      }
+    }
+
+    await Repository.resetForDev();
+    const newId = await Repository.getDeviceId();
+    setDeviceId(newId);
+    setOnboardingDone(false);
+    setFreeScanUsed(false);
+    setEntitlement(null);
+    setFreeScanReport(null);
+    setReports([]);
+    setDraftState(emptyDraft());
+  }, [deviceId]);
+
   return (
     <Ctx.Provider
       value={{
@@ -122,6 +144,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         unlockPro,
         restorePurchases,
         refreshReports,
+        devResetForTesting,
       }}
     >
       {children}

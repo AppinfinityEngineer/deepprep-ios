@@ -73,4 +73,7 @@ export const DeepPrepApi = {
     http.get<{ creditsRemaining: number; active: boolean; introUsed: boolean }>(`/usage?deviceId=${deviceId}`),
 
   privacyDelete: (deviceId: string) => http.post<{ deleted: boolean }>("/privacy/delete", { deviceId }),
+
+  devResetFreeScan: (deviceId: string) =>
+    http.post<{ ok: boolean; deviceId: string }>("/dev/reset-free-scan", { deviceId }),
 };

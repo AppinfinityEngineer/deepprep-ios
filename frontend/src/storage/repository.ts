@@ -48,6 +48,16 @@ export const Repository = {
     return (await storage.secureGet<boolean>(KEYS.freeScanUsed, false)) === true;
   },
 
+  async resetForDev() {
+    await Promise.all([
+      storage.secureRemove(KEYS.deviceId),
+      storage.secureRemove(KEYS.freeScanUsed),
+      storage.secureRemove(KEYS.freeScanReportId),
+      storage.removeItem(KEYS.onboardingDone),
+      storage.removeItem(KEYS.reviewState),
+    ]);
+  },
+
   // Weighted review state.
   async getReviewState(): Promise<{ score: number; lastPromptAt: number; prompted: boolean }> {
     const raw = await storage.getItem<string>(KEYS.reviewState, "");

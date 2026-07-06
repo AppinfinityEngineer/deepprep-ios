@@ -14,7 +14,7 @@ import { HapticsService } from "@/src/haptics/HapticsService";
 
 export default function Settings() {
   const router = useRouter();
-  const { entitlement, deviceId, refreshEntitlement, refreshReports } = useApp();
+  const { entitlement, deviceId, refreshEntitlement, refreshReports, devResetForTesting } = useApp();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -33,6 +33,21 @@ export default function Settings() {
       setMsg("Purchases restored.");
     } catch {
       setMsg("Could not restore purchases.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const devReset = async () => {
+    setBusy("dev-reset");
+    setMsg(null);
+    try {
+      await devResetForTesting();
+      HapticsService.success();
+      setMsg("Dev free scan reset. Restart onboarding to test again.");
+      router.replace("/onboarding");
+    } catch {
+      setMsg("Could not reset dev scan.");
     } finally {
       setBusy(null);
     }
@@ -78,6 +93,9 @@ export default function Settings() {
         <SettingRow icon="shield" label="Privacy Policy" onPress={() => router.push("/legal/privacy")} testID="settings-privacy" />
         <SettingRow icon="file-text" label="Terms of Service" onPress={() => router.push("/legal/terms")} testID="settings-terms" />
         <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL("mailto:support@thoughtsnaplabs.com")} testID="settings-support" />
+        {__DEV__ ? (
+          <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Free Scan"} onPress={devReset} testID="settings-dev-reset" />
+        ) : null}
         <SettingRow icon="trash-2" label={busy === "delete" ? "Deleting…" : "Delete My Data"} danger onPress={deleteData} testID="settings-delete" />
 
         {msg ? <Text style={styles.msg} testID="settings-message">{msg}</Text> : null}

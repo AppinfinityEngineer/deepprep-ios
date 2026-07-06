@@ -16,9 +16,10 @@ const STEPS = ["Finding company", "Matching interviewer", "Checking freshness", 
 
 export default function ScanScreen() {
   const router = useRouter();
-  const { deviceId, draft, setFreeScanReport, markFreeScanUsed } = useApp();
+  const { deviceId, draft, setFreeScanReport, markFreeScanUsed, devResetForTesting } = useApp();
   const [theatreDone, setTheatreDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
   const [reportReady, setReportReady] = useState(false);
   const startedRef = useRef(false);
 
@@ -49,6 +50,21 @@ export default function ScanScreen() {
     })();
   }, [deviceId, draft, setFreeScanReport, markFreeScanUsed]);
 
+  const resetDevScan = async () => {
+    setResetting(true);
+    try {
+      await devResetForTesting();
+      setError(null);
+      setReportReady(false);
+      setTheatreDone(false);
+      startedRef.current = false;
+      HapticsService.success();
+      router.replace("/onboarding");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   useEffect(() => {
     if (theatreDone && reportReady && !error) {
       HapticsService.success();
@@ -69,6 +85,16 @@ export default function ScanScreen() {
           <Text style={styles.errorTitle}>Scan unavailable</Text>
           <Text style={styles.errorText}>{error}</Text>
           <Button label="Unlock DeepPrep Pro" variant="white" onPress={() => router.replace("/paywall")} testID="scan-error-cta" style={{ marginTop: spacing.lg }} />
+          {__DEV__ ? (
+            <Button
+              label={resetting ? "Resetting…" : "Reset dev free scan"}
+              variant="ghost"
+              onPress={resetDevScan}
+              disabled={resetting}
+              testID="scan-dev-reset"
+              style={{ marginTop: spacing.md }}
+            />
+          ) : null}
         </View>
       ) : (
         <View style={styles.checklist}>
