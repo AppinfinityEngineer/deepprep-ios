@@ -43,14 +43,5 @@
       },
       "autoIncrement": false
     }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "richyprice77@gmail.com",
-        "ascAppId": "",
-        "appleTeamId": ""
-      }
-    }
   }
 }
