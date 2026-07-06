@@ -10,7 +10,7 @@
     "backgroundColor": "#050505",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.thoughtsnaplabs.deepprep",
       "infoPlist": {
         "UIBackgroundModes": []
