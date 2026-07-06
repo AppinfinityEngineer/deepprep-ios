@@ -1,6 +1,10 @@
 // Thin fetch wrapper around the DeepPrep backend. All routes are /api-prefixed.
 const BASE = process.env.EXPO_PUBLIC_BACKEND_URL;
 
+if (!BASE) {
+  throw new Error("EXPO_PUBLIC_BACKEND_URL is not configured. Set it in frontend/.env.");
+}
+
 export class ApiError extends Error {
   status: number;
   detail: any;

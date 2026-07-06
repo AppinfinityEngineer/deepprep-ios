@@ -1,40 +1,93 @@
-# DeepPrep Backend (FastAPI + MongoDB)
 
-Entrypoint: `server.py` (mounts `dp.router` under `/api`).
+# DeepPrep Backend
 
-```
+FastAPI backend for DeepPrep. Entrypoint: `server.py`, with routes mounted under `/api`.
+
+## Structure
+
+```text
 dp/
-  config.py                 # env + caps
-  db.py                     # motor collections
-  models.py                 # pydantic schema (Interview, Report, PersonCandidate, ...)
-  utils.py                  # ids, timestamps, hashing
+  config.py                 env + caps
+  db.py                     Motor/Mongo collections
+  models.py                 Pydantic schemas
+  router.py                 API router aggregation
+  routes_*.py               health/free-scan/reports/entitlement/privacy
   services/
-    search_provider.py      # Tavily (stubbed) / mock
-    company_resolver.py
-    person_discovery.py
-    candidate_ranker.py     # deterministic scoring
-    freshness.py            # current-role freshness (separate from identity)
-    source_classifier.py
-    cost_tracker.py
-    llm_provider.py         # OpenAI/Anthropic synthesis (provider switch)
-    entitlement_service.py  # server-authoritative credits/entitlement
-    free_scan_service.py    # eligibility + abuse protection
-    report_service.py       # pipeline orchestration
-  routes_*.py               # health / free-scan / reports / entitlement / privacy
+    search_provider.py      Tavily/live search or explicit dev mock
+    company_resolver.py     company context
+    person_discovery.py     interviewer discovery query pack
+    candidate_ranker.py     deterministic person scoring
+    freshness.py            current-role freshness scoring
+    source_classifier.py    source/domain classification
+    cost_tracker.py         estimated cost model
+    llm_provider.py         synthesis provider wrapper
+    entitlement_service.py  credits/entitlement state
+    free_scan_service.py    free scan eligibility + abuse controls
+    report_service.py       pipeline orchestration
 ```
 
-## Run
-```
+## Run locally
+
+```bash
+cd backend
 cp .env.example .env
-/root/.venv/bin/uvicorn server:app --host 0.0.0.0 --port 8001 --reload
-curl localhost:8001/api/health
+python -m venv .venv
+# Windows: .\.venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python -c "import server; print('server imports OK')"
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-## Env
-See `.env.example`. Key toggles: `ENABLE_MOCK_SEARCH`, `ENABLE_MOCK_LLM`,
-`LLM_PROVIDER`, `OPENAI_MODEL`, `ANTHROPIC_MODEL`, `OPENAI_API_KEY`,
-`ANTHROPIC_API_KEY`, `TAVILY_API_KEY`. Caps: `FREE_SCAN_DAILY_GLOBAL_CAP`,
-`MAX_WEEKLY_CREDITS_PER_USER`, etc.
+```bash
+curl http://localhost:8001/api/health
+```
 
-Do not silently return fake data in production: with `ENABLE_MOCK_LLM=false` and
-no key, `/reports` returns HTTP 503 `llm_not_configured` (credit refunded).
+## Environment
+
+See `backend/.env.example`.
+
+For local development, `MONGO_URL` defaults to `mongodb://localhost:27017` when `APP_ENV` is not production. In production, set `MONGO_URL` explicitly.
+
+## Mock/live policy
+
+Mock mode is for development only and must be explicit:
+
+```env
+ENABLE_MOCK_SEARCH=true
+ENABLE_MOCK_LLM=true
+```
+
+Live mode requires keys:
+
+```env
+ENABLE_MOCK_SEARCH=false
+ENABLE_MOCK_LLM=false
+TAVILY_API_KEY=...
+OPENAI_API_KEY=...       # or ANTHROPIC_API_KEY
+```
+
+If mock mode is off and keys are missing, endpoints should fail clearly with a configuration error. They should not silently return fake user-facing reports.
+
+## Native StoreKit only
+
+DeepPrep uses the ThoughtSnap Labs native StoreKit pattern. Do not add RevenueCat.
+
+Product ID: `deepprep_pro_weekly`  
+Entitlement: `deepprep_pro`
+
+The backend is the authority for:
+
+- active entitlement
+- intro credit
+- weekly credits
+- usage counters
+- free scan eligibility
+- report generation permission
+
+## Test commands
+
+```bash
+python -m py_compile server.py dp/*.py dp/services/*.py
+pytest
+```

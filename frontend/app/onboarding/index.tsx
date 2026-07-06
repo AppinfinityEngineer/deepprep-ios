@@ -58,7 +58,11 @@ export default function Onboarding() {
 
   const toggleConcern = (c: string) => {
     const set = new Set(draft.concerns);
-    set.has(c) ? set.delete(c) : set.add(c);
+    if (set.has(c)) {
+      set.delete(c);
+    } else {
+      set.add(c);
+    }
     setDraft({ concerns: Array.from(set) });
   };
 
@@ -185,7 +189,7 @@ function StepContent(props: any) {
       return (
         <StepBlock title="When is your interview?">
           <TextField label="Interview date" value={draft.date || ""} onChangeText={(t: string) => setDraft({ date: t })} placeholder="e.g. 30 May 2026" testID="input-date" />
-          <Text style={[styles.label, { marginTop: spacing.md }]}>What's your biggest concern?</Text>
+          <Text style={[styles.label, { marginTop: spacing.md }]}>What is your biggest concern?</Text>
           <View style={styles.chipsWrap}>
             {CONCERNS.map((c) => (
               <Chip key={c} label={c} selected={draft.concerns.includes(c)} onPress={() => toggleConcern(c)} testID={`concern-${c}`} />

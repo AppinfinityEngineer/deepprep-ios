@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors, spacing, font, radius } from "@/src/theme";
+import { colors, spacing, font } from "@/src/theme";
 import { Card, Badge, Bullet, SectionTitle } from "@/src/components/ui";
 import { InterviewerDossier, Report } from "@/src/models/types";
 import { DeepPrepApi } from "@/src/api/deepprep";

@@ -1,20 +1,14 @@
 """LLM synthesis provider.
 
-Uses the emergentintegrations LlmChat wrapper. Provider/model are configurable
-via env (LLM_PROVIDER, OPENAI_MODEL, ANTHROPIC_MODEL). Uses a provider-specific
-key if supplied, else the Emergent universal key.
-
-TODO(branch-2): ThoughtSnap Labs — set OPENAI_API_KEY / ANTHROPIC_API_KEY in
-env to drop the Emergent universal key for production.
+Current branch keeps synthesis production-shaped and deliberately fails in live
+mode until branch 5 wires direct OpenAI/Anthropic SDK calls and structured-output
+validation. Development fixtures are available only when ENABLE_MOCK_LLM=true.
 """
 import json
 import re
 from typing import Dict
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
-
 from ..config import get_settings
-from ..utils import new_id
 
 
 class LLMConfigError(RuntimeError):
@@ -34,7 +28,7 @@ def _extract_json(text: str) -> Dict:
 
 
 def _system_message(mode: str) -> str:
-    common = (
+    return (
         "You are DeepPrep, a professional interview-intelligence assistant. "
         "You produce private interview-preparation briefs from publicly available "
         "professional information and user-supplied interview details. "
@@ -44,7 +38,6 @@ def _system_message(mode: str) -> str:
         "Frame everything as helpful, respectful interview preparation. "
         "Return ONLY valid minified JSON, no markdown, no commentary."
     )
-    return common
 
 
 def _full_prompt(ctx: Dict) -> str:
@@ -108,24 +101,18 @@ async def synthesize(ctx: Dict, mode: str) -> Dict:
     if not settings.has_llm_key:
         # Explicit config error — never silently fake user-facing content.
         raise LLMConfigError(
-            "No LLM key configured. Set OPENAI_API_KEY / ANTHROPIC_API_KEY / "
-            "EMERGENT_LLM_KEY, or enable ENABLE_MOCK_LLM=true for dev."
+            "No LLM key configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY, "
+            "or enable ENABLE_MOCK_LLM=true for local development."
         )
 
-    provider, model, key = settings.resolved_llm()
-    chat = (
-        LlmChat(api_key=key, session_id=new_id(), system_message=_system_message(mode))
-        .with_model(provider, model)
+    # Branch 5 will wire direct OpenAI/Anthropic SDK calls here. Until then,
+    # live mode must fail clearly rather than silently returning mock data.
+    provider, model, _key = settings.resolved_llm()
+    raise LLMConfigError(
+        f"Live LLM synthesis for {provider}/{model} is not wired in this branch. "
+        "Use ENABLE_MOCK_LLM=true for local development, or complete branch 5 "
+        "to enable direct OpenAI/Anthropic synthesis."
     )
-    prompt = _free_prompt(ctx) if mode == "free_scan" else _full_prompt(ctx)
-    resp = await chat.send_message(UserMessage(text=prompt))
-    text = resp if isinstance(resp, str) else getattr(resp, "content", str(resp))
-    data = _extract_json(text)
-    data["_provider"] = provider
-    data["_model"] = model
-    data["_input_chars"] = len(prompt)
-    data["_output_chars"] = len(text)
-    return data
 
 
 def _mock_output(ctx: Dict, mode: str) -> Dict:

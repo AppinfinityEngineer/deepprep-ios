@@ -1,4 +1,4 @@
-// StoreKit / entitlement wrappers — production-shaped, purchase stubbed.
+// StoreKit / entitlement wrappers — production-shaped, native StoreKit only.
 //
 // Product / entitlement identifiers:
 //   Product ID:      deepprep_pro_weekly
@@ -8,13 +8,13 @@
 // The client is NEVER the source of truth for paid access. `purchase()` and
 // `restore()` both call the backend `/entitlement/sync`, which is authoritative.
 //
-// TODO(branch-5): Replace the stubbed purchase() with real StoreKit 2 /
-// react-native-purchases (RevenueCat). Pass the real receipt/transaction to
-// entitlementSync({ receipt }). Remove DEV_MOCK_UNLOCK for production builds.
+// TODO(branch-7): Replace the stubbed purchase/restore methods with the proven
+// ThoughtSnap Labs native StoreKit implementation from SnapBack AI / Plump.
+// Pass the real StoreKit transaction data to entitlementSync({ receipt }).
 import { DeepPrepApi } from "../api/deepprep";
 import { Entitlement } from "../models/types";
 
-export const PRODUCT_ID = "deepprep_pro_weekly";
+export const PRODUCT_ID = process.env.EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID || "deepprep_pro_weekly";
 export const ENTITLEMENT_ID = "deepprep_pro";
 
 export const PRICING = {
@@ -24,28 +24,26 @@ export const PRICING = {
   recurringPeriod: "week",
 };
 
-// Dev-only mock unlock. Must be false for production builds.
-// TODO(branch-5): set to false and rely on real StoreKit receipts.
-const DEV_MOCK_UNLOCK = true;
+// Local development only. Must remain false in production/TestFlight envs.
+const DEV_MOCK_UNLOCK = process.env.EXPO_PUBLIC_DEV_MOCK_UNLOCK === "true";
 
 export const StoreKitService = {
   productId: PRODUCT_ID,
   entitlementId: ENTITLEMENT_ID,
   pricing: PRICING,
 
-  // Stubbed purchase. In production this triggers the native purchase sheet,
-  // then forwards the verified receipt to the backend.
+  // Stubbed purchase. Branch 7 will trigger the native purchase sheet, then
+  // forward the StoreKit transaction payload to the backend.
   async purchase(deviceId: string): Promise<Entitlement> {
-    // TODO(branch-5): const receipt = await Purchases.purchaseProduct(PRODUCT_ID);
     return DeepPrepApi.entitlementSync(deviceId, {
       productId: PRODUCT_ID,
       devMockUnlock: DEV_MOCK_UNLOCK,
     });
   },
 
-  // Restore previous purchases (calls backend to re-sync entitlement).
+  // Stubbed restore. Branch 7 will read current App Store transactions and
+  // re-sync entitlement with the backend.
   async restore(deviceId: string): Promise<Entitlement> {
-    // TODO(branch-5): const info = await Purchases.restorePurchases();
     return DeepPrepApi.entitlementSync(deviceId, {
       productId: PRODUCT_ID,
       devMockUnlock: DEV_MOCK_UNLOCK,

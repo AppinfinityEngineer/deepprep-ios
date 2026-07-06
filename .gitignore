@@ -86,3 +86,13 @@ android-sdk/
 credentials.json
 *.key
 .credentials
+
+# DeepPrep local runtime
+backend/.env
+frontend/.env
+*.sqlite
+*.db
+.expo/
+.web-build/
+ios/
+android/

@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
-import { Text, View, StyleSheet, ScrollView, Pressable, RefreshControl } from "react-native";
-import { useRouter } from "expo-router";
-import { useFocusEffect } from "expo-router";
+import { Text, View, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 

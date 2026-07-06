@@ -1,47 +1,89 @@
-# DeepPrep — Interview Prep AI (ThoughtSnap Labs)
 
-Premium, iOS-first interview-intelligence app. Enter a company, role, interview
-date and interviewers; DeepPrep researches public professional signals and
-generates an interview brief: interviewer dossiers, company signals, likely
-questions, smart talking points, and a day-of brief — with honest
-confidence/freshness notes.
+# DeepPrep — Interview Prep AI
+
+**ThoughtSnap Labs iOS product.** DeepPrep is a premium, iOS-first interview-intelligence app.
+Users enter a company, role, interview date, job description and known interviewers. DeepPrep creates a private interview preparation brief with company context, interviewer dossiers, likely questions, smart talking points, confidence/freshness notes and a day-of brief.
+
+DeepPrep is positioned as a **career-preparation app**, not a people-search, stalking, background-check or OSINT product.
+
+## Stack
 
 - **Frontend:** React Native + TypeScript + Expo + Expo Router
-- **Backend:** FastAPI + MongoDB (`/app/backend`)
-- **AI:** OpenAI / Anthropic synthesis (configurable), Tavily search (stubbed)
+- **Backend:** FastAPI + MongoDB
+- **Search:** Tavily live web search when configured
+- **AI:** OpenAI / Anthropic synthesis when configured
+- **Payments:** Native StoreKit / ThoughtSnap Labs entitlement pattern only. **No RevenueCat.**
 
----
+## Repo layout
 
-## Running locally
+```text
+frontend/   Expo iOS app
+backend/    FastAPI backend
+memory/     product notes
+```
+
+## Local setup
 
 ### Backend
-```
+
+```bash
 cd backend
-cp .env.example .env      # fill in keys (or keep mock flags for dev)
-/root/.venv/bin/uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+cp .env.example .env
+python -m venv .venv
+# Windows: .\.venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python -c "import server; print('server imports OK')"
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
-Health check: `GET /api/health`.
 
-**Mock vs live:**
-- `ENABLE_MOCK_SEARCH=true` — no Tavily key needed (dev). Set `false` + add
-  `TAVILY_API_KEY` for live web search (branch-1).
-- `ENABLE_MOCK_LLM` — `false` uses real synthesis via `OPENAI_API_KEY` /
-  `ANTHROPIC_API_KEY` (or the Emergent universal key). `true` returns dev
-  fixtures ONLY (never used as production facts).
-- Provider/model: `LLM_PROVIDER`, `OPENAI_MODEL`, `ANTHROPIC_MODEL`.
+Health check:
 
-> This build currently runs with `ENABLE_MOCK_LLM=true` because the shared
-> Emergent universal key balance was exhausted. Add balance (Profile → Universal
-> Key) **or** set your own `OPENAI_API_KEY`, then set `ENABLE_MOCK_LLM=false`.
+```bash
+curl http://localhost:8001/api/health
+```
+
+Local development defaults to mock search/LLM unless changed in `backend/.env`.
+Production must set real keys and disable mock flags.
 
 ### Frontend
-Served by Expo (Metro) on port 3000. The app reads `EXPO_PUBLIC_BACKEND_URL`
-and calls `${EXPO_PUBLIC_BACKEND_URL}/api/...`.
 
----
+```bash
+cd frontend
+cp .env.example .env
+ yarn install
+ yarn typecheck
+ yarn lint
+ yarn start
+```
+
+Set `EXPO_PUBLIC_BACKEND_URL` to your backend, for example `http://localhost:8001`.
+
+## Mock vs live mode
+
+DeepPrep must never silently fake production user-facing reports.
+
+Development mock mode is explicit:
+
+```env
+ENABLE_MOCK_SEARCH=true
+ENABLE_MOCK_LLM=true
+```
+
+Live mode:
+
+```env
+ENABLE_MOCK_SEARCH=false
+ENABLE_MOCK_LLM=false
+TAVILY_API_KEY=...
+OPENAI_API_KEY=...      # or ANTHROPIC_API_KEY
+```
+
+If mock mode is off and a required key is missing, the backend should fail clearly instead of returning fake data.
 
 ## API
-```
+
+```text
 GET  /api/health
 POST /api/free-scan/eligibility
 POST /api/free-scan/create
@@ -55,25 +97,39 @@ GET  /api/usage?deviceId=...
 POST /api/privacy/delete
 ```
 
-## Pipeline
-`company_resolver → person_discovery → candidate_ranker (deterministic scoring)
-→ freshness → llm_provider (synthesis) → report_service`. Identity confidence
-and current-role freshness are scored separately. Costs tracked per report.
+## Product guardrails
 
-## Abuse protection (free scan)
-Server-authoritative per-device record (`freeScanUsed`), anonymous device id
-persisted in the iOS Keychain (survives reinstall), global daily cap, IP/UA
-hashes, and an App Attest/DeviceCheck token slot (verification stubbed).
+- One free lite Intel Scan during onboarding.
+- Server-authoritative free scan eligibility.
+- Native StoreKit subscription only.
+- Product ID: `deepprep_pro_weekly`.
+- Entitlement: `deepprep_pro`.
+- Intro: £1.99 first 3 days, 1 Intel Credit.
+- Weekly: £7.99/week, 6 Intel Credits/week.
+- Backend remains authoritative for credits, usage and entitlement state.
+- Reports must show confidence/freshness notes and avoid sensitive/private personal claims.
 
-## Entitlement / StoreKit
-Server-authoritative. Product `deepprep_pro_weekly`, entitlement `deepprep_pro`,
-£1.99/3 days then £7.99/week. Purchase + restore are stubbed with a dev-only
-mock unlock (`src/storekit/StoreKitService.ts`, `DEV_MOCK_UNLOCK`). Credit rules
-in `entitlement_service.py` (standard brief = 1 credit, panel 3–4 = 2, day-of =
-free, profile refresh = free).
+## Branch map
 
-## Branch plan (TODOs left in code)
-1. Wire Tavily search · 2. Real OpenAI/Anthropic keys · 3. Mongo indexes/scale ·
-4. App Store Server API entitlement · 5. Real StoreKit/RevenueCat ·
-6. DeviceCheck/App Attest · 7. Production privacy/terms · 8. Notifications +
-TestFlight polish · 9. App Store metadata · 10. Production caps/admin.
+Current `main` is the generated V3 baseline. Development proceeds by patches only, branch by branch:
+
+```text
+1. chore/v3-repo-hygiene-production-config
+2. fix/v3-mock-live-safety-gates
+3. fix/v3-profile-evidence-free-scan-flow
+4. feature/v3-live-tavily-discovery-proof
+5. feature/v3-real-llm-synthesis-validation
+6. feature/v3-backend-security-credit-caps
+7. feature/v3-storekit-native-entitlement
+8. feature/v3-apple-review-polish
+9. feature/v3-devicecheck-appattest-free-scan
+10. release/v3-testflight-readiness
+```
+
+## Apple-review positioning
+
+Use safe language everywhere:
+
+> DeepPrep uses user-supplied interview details and publicly available professional information to generate private interview preparation briefs with confidence and freshness notes.
+
+Avoid language such as spy, stalk, hidden data, find anyone, background check, dox, or OSINT.

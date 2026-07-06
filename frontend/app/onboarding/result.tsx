@@ -16,7 +16,7 @@ export default function ResultScreen() {
     return (
       <ScreenContainer testID="result-empty">
         <Text style={styles.title}>Your Free Intel Scan</Text>
-        <Text style={styles.sub}>We couldn't find your scan. Please try again.</Text>
+        <Text style={styles.sub}>We could not find your scan. Please try again.</Text>
         <Button label="Back to start" variant="dark" onPress={() => router.replace("/onboarding")} style={{ marginTop: spacing.xl }} />
       </ScreenContainer>
     );

@@ -42,7 +42,7 @@ export default function ScanScreen() {
           await ReviewService.record("match_confidence_high");
         }
       } catch (e: any) {
-        const msg = e?.detail?.message || e?.message || "We couldn't complete your scan.";
+        const msg = e?.detail?.message || e?.message || "We could not complete your scan.";
         setError(msg);
         await ReviewService.record("api_error");
       }
@@ -61,7 +61,7 @@ export default function ScanScreen() {
       <View style={styles.top}>
         <RadarMark size={64} />
         <Text style={styles.title}>Building your free Intel Scan</Text>
-        <Text style={styles.sub}>Once complete, we'll scan the quality of our research.</Text>
+        <Text style={styles.sub}>Once complete, we will scan the quality of our research.</Text>
       </View>
 
       {error ? (

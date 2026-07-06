@@ -1,8 +1,8 @@
 """Server-authoritative entitlement + credit accounting (stubbed, production-shaped).
 
-TODO(branch-4/5): Replace `sync` receipt handling with real Apple App Store
-Server API / RevenueCat verification. The client must NEVER be the source of
-truth for paid access — this service is.
+TODO(branch-7): Replace `sync` receipt handling with real Apple App Store
+Server API validation for native StoreKit transactions. The client must NEVER be
+the source of truth for paid access — this service is.
 """
 from typing import Dict
 from .. import db

@@ -10,9 +10,10 @@ import { useIconFonts } from "@/src/hooks/use-icon-fonts";
 import { AppProvider } from "@/src/state/AppContext";
 import { colors } from "@/src/theme";
 
-// Disable logbox errors etc so that users can see the app
-// and agent works as expected.
-LogBox.ignoreAllLogs(true);
+// Keep useful warnings visible. Only suppress known noisy development warnings.
+if (__DEV__) {
+  LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+}
 
 // Keep the native splash visible from cold start until icon fonts register.
 SplashScreen.preventAutoHideAsync();

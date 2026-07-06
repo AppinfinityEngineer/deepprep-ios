@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 
 import { colors, spacing, font, radius } from "@/src/theme";
-import { Card, Badge, Button } from "@/src/components/ui";
+import { Card, Badge } from "@/src/components/ui";
 import { useApp } from "@/src/state/AppContext";
 import { StoreKitService } from "@/src/storekit/StoreKitService";
 import { DeepPrepApi } from "@/src/api/deepprep";

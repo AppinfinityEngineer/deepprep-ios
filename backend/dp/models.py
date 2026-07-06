@@ -177,7 +177,7 @@ class ReportCreateIn(BaseModel):
 
 class EntitlementSyncIn(BaseModel):
     deviceId: str
-    # In production this carries the App Store transaction / RevenueCat receipt.
+    # In production this carries the native StoreKit transaction payload.
     receipt: Optional[str] = None
     productId: Optional[str] = None
     devMockUnlock: bool = False  # dev-only; ignored when APP_ENV=production

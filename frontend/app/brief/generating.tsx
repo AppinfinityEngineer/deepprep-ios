@@ -40,12 +40,12 @@ export default function Generating() {
         await ReviewService.record("report_generated");
       } catch (e: any) {
         const reason = e?.detail?.reason;
-        let msg = "We couldn't generate your report. Please try again.";
+        let msg = "We could not generate your report. Please try again.";
         if (reason === "insufficient_credits" || reason === "no_active_subscription")
           msg = "You're out of Intel Credits. Credits refresh weekly.";
         else if (reason === "daily_credit_cap") msg = "Daily credit limit reached. Please try again tomorrow.";
         else if (reason === "weekly_credit_cap") msg = "Weekly credit limit reached.";
-        else if (reason === "llm_not_configured") msg = "AI synthesis isn't configured. Add API keys to continue.";
+        else if (reason === "llm_not_configured") msg = "AI synthesis is not configured. Add API keys to continue.";
         setError({ msg, reason });
         await ReviewService.record("report_failed");
       }
@@ -69,7 +69,7 @@ export default function Generating() {
 
       {error ? (
         <View style={styles.errorBox} testID="generating-error">
-          <Text style={styles.errorTitle}>Couldn't generate report</Text>
+          <Text style={styles.errorTitle}>Could not generate report</Text>
           <Text style={styles.errorText}>{error.msg}</Text>
           <Button label="Back to Home" variant="dark" onPress={() => router.replace("/(tabs)")} style={{ marginTop: spacing.lg }} testID="generating-error-home" />
         </View>
