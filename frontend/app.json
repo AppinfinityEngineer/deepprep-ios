@@ -1,24 +1,28 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
-    "version": "1.0.0",
+    "name": "DeepPrep",
+    "slug": "deepprep",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
-    "userInterfaceStyle": "automatic",
+    "scheme": "deepprep",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#050505",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emergent.dossierpro.mehnci"
+      "bundleIdentifier": "com.thoughtsnaplabs.deepprep",
+      "infoPlist": {
+        "UIBackgroundModes": []
+      }
     },
     "android": {
+      "package": "com.thoughtsnaplabs.deepprep",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#050505"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.emergent.dossierpro.mehnci"
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
@@ -27,13 +31,14 @@
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-image.png",
-          "imageWidth": 200,
+          "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#000000"
+          "backgroundColor": "#050505"
         }
       ]
     ],

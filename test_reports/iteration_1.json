@@ -1,0 +1,51 @@
+{
+  "summary": "DeepPrep MVP tested end-to-end. Backend: 9/9 pytest cases pass against the public preview URL (health, free-scan eligibility + create + already_used 403 abuse block, entitlement sync devMockUnlock, full report generation with dossiers/questions/talkingPoints/dayOfBrief, 402 no_active_subscription, panel brief = 2 credits vs standard = 1 credit, usage endpoint, and privacy delete). Frontend: full onboarding (9 steps with company+role required at step 4 and interviewer required at step 6) -> free-scan theatre -> result screen with 90% Match Confidence + insights + See Full Report -> Review page (Love it + Continue, no X) -> HARD paywall (verified NO close/X button, Continue + Restore Purchases visible) -> generating -> Report screen (all 4 tabs Overview/Dossiers/Questions/Day-of render, 2 dossier cards, Dossier detail screen opens, Copy day-of button visible) -> Home tab (credits pill shows 6 credits, next interview card, New Brief button, recent briefs, bottom tabs) -> Settings (subscription card, restore, privacy, terms, delete data) -> Legal (privacy) screen navigates. Dev mock unlock via /api/entitlement/sync works, credit decrement correct (7 -> 6 after 1-credit brief). No deprecated Expo packages found. No red screen errors. Free-scan abuse protection verified (second create returns 403 already_used).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "dossier/[id]",
+        "issues": [
+          "Dossier detail screen initially shows 'Loading…' briefly after opening from Dossiers tab — data is refetched even though it exists in the report already in memory. Consider hydrating from the current report state to avoid the empty-state flash. Reference: /app/frontend/app/dossier/[id].tsx"
+        ]
+      }
+    ],
+    "react_native_issues": [
+      {
+        "component": "web preview warning",
+        "issue": "React Native Web warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Non-blocking on iOS builds but should be tracked to keep RN 0.74+ compatibility clean. Likely from a third-party component in /app/frontend/src/components. Reference: browser console warnings during Home render."
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Optional: hydrate Interviewer Dossier detail from the already-loaded report to avoid the brief 'Loading…' flash.",
+    "Optional: track the 'props.pointerEvents' RN web deprecation warning in a follow-up (non-blocking)."
+  ],
+  "critical_code_review_comments": [
+    "server.py uses deprecated FastAPI @app.on_event('shutdown'). Consider migrating to the lifespan context manager before production (non-blocking).",
+    "routes_reports.py refund path on LLM failure mutates the entitlement doc via a read-modify-write ($set of full ent) — not concurrency-safe. Use $inc for credits to avoid lost updates under contention.",
+    "entitlement_service.consume_credits also uses read-modify-write on ent.credits — same $inc recommendation for atomicity.",
+    "Free-scan abuse protection is device-scoped only; IP/UA hashes are stored but not enforced. Fine for MVP but flag for production alongside App Attest verification (already TODO in code)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9)",
+    "frontend": "100% on critical flows (onboarding, free-scan, review, paywall, report tabs, dossier detail, home, settings, legal)"
+  },
+  "seed_data_creation": "None — each test uses a fresh TEST_<uuid> deviceId to respect free-scan one-time abuse rule.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend fully green. Frontend flows all pass with mobile viewport 390x844. Use unique deviceIds for repeated free-scan tests. Report screen tab testIDs are capitalized: tab-Overview, tab-Dossiers, tab-Questions, tab-Day-of. Paywall MUST NOT have a close/X (intentional HARD paywall). devMockUnlock=true is enabled and unlocks entitlement with 7 credits (INTRO 1 + WEEKLY 6). Backend at ${EXPO_PUBLIC_BACKEND_URL}/api. Mocks in play: ENABLE_MOCK_LLM=true, ENABLE_MOCK_SEARCH=true, StoreKit stubbed via devMockUnlock (all MOCKED as intended for this build).",
+  "rca_of_issue": "N/A — no failures."
+}
