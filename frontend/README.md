@@ -61,3 +61,15 @@ Product ID: `deepprep_pro_weekly`
 Entitlement: `deepprep_pro`
 
 StoreKit is stubbed until the native entitlement branch, but the app should stay production-shaped.
+
+
+## Native StoreKit / TestFlight
+
+Branch 7 wires DeepPrep to native StoreKit using the ThoughtSnap Labs direct-IAP pattern. There is no RevenueCat.
+
+Product ID: `deepprep_pro_weekly`
+Entitlement: `deepprep_pro`
+Launch offer: £1.99 first 3 days, then £7.99/week
+Credits: 1 intro/full Intel Credit on activation, then 6 weekly Intel Credits.
+
+Expo Go cannot display Apple purchase sheets. Use an iOS dev-client or TestFlight build for real StoreKit testing. Version/build for first TestFlight lane: `1.0.0` / build `1`.

@@ -14,7 +14,7 @@ import { HapticsService } from "@/src/haptics/HapticsService";
 
 export default function Settings() {
   const router = useRouter();
-  const { entitlement, deviceId, refreshEntitlement, refreshReports, devResetForTesting } = useApp();
+  const { entitlement, deviceId, refreshEntitlement, refreshReports, devResetForTesting, restorePurchases } = useApp();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -28,7 +28,7 @@ export default function Settings() {
     setBusy("restore");
     setMsg(null);
     try {
-      await StoreKitService.restore(deviceId);
+      await restorePurchases();
       await refreshEntitlement();
       setMsg("Purchases restored.");
     } catch {
@@ -90,6 +90,7 @@ export default function Settings() {
         <View style={{ height: spacing.lg }} />
 
         <SettingRow icon="refresh-cw" label={busy === "restore" ? "Restoring…" : "Restore Purchases"} onPress={restore} testID="settings-restore" />
+        <SettingRow icon="external-link" label="Manage Apple Subscription" onPress={() => StoreKitService.openManageSubscriptions()} testID="settings-manage-subscription" />
         <SettingRow icon="shield" label="Privacy Policy" onPress={() => router.push("/legal/privacy")} testID="settings-privacy" />
         <SettingRow icon="file-text" label="Terms of Service" onPress={() => router.push("/legal/terms")} testID="settings-terms" />
         <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL("mailto:support@thoughtsnaplabs.com")} testID="settings-support" />

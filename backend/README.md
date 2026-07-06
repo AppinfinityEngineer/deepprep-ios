@@ -231,3 +231,8 @@ curl.exe -i "https://deepprep-ios-dev.onrender.com/api/reports/<REPORT_ID>?devic
 
 Expected wrong-device report read result: `404`.
 
+
+
+## StoreKit entitlement sync
+
+`POST /api/entitlement/sync` accepts the single launch product `deepprep_pro_weekly` and maps it to `deepprep_pro`. In `APP_ENV=development`, native StoreKit transaction payloads are accepted for TestFlight/sandbox validation. In `APP_ENV=production`, this endpoint must be backed by Apple Server API validation before granting access.

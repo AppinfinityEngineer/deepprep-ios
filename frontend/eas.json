@@ -1,0 +1,9 @@
+{
+  "cli": { "version": ">= 14.0.0", "appVersionSource": "local" },
+  "build": {
+    "development": { "developmentClient": true, "distribution": "internal", "ios": { "resourceClass": "m-medium" }, "env": { "EXPO_PUBLIC_BACKEND_URL": "https://deepprep-ios-dev.onrender.com", "EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID": "deepprep_pro_weekly", "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false" } },
+    "preview": { "distribution": "internal", "ios": { "resourceClass": "m-medium" }, "env": { "EXPO_PUBLIC_BACKEND_URL": "https://deepprep-ios-dev.onrender.com", "EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID": "deepprep_pro_weekly", "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false" } },
+    "production": { "ios": { "resourceClass": "m-medium" }, "env": { "EXPO_PUBLIC_BACKEND_URL": "https://deepprep-ios-dev.onrender.com", "EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID": "deepprep_pro_weekly", "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false" } }
+  },
+  "submit": { "production": { "ios": { "appleId": "richyprice77@gmail.com", "ascAppId": "", "appleTeamId": "" } } }
+}

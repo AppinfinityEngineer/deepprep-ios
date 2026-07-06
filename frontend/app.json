@@ -2,7 +2,7 @@
   "expo": {
     "name": "DeepPrep",
     "slug": "deepprep",
-    "version": "3.0.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "deepprep",
@@ -14,7 +14,8 @@
       "bundleIdentifier": "com.thoughtsnaplabs.deepprep",
       "infoPlist": {
         "UIBackgroundModes": []
-      }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.thoughtsnaplabs.deepprep",
@@ -40,7 +41,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#050505"
         }
-      ]
+      ],
+      "react-native-iap"
     ],
     "experiments": {
       "typedRoutes": true

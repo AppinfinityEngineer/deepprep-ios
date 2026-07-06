@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, spacing, font, radius } from "@/src/theme";
 import { Button } from "@/src/components/ui";
 import { useApp } from "@/src/state/AppContext";
-import { StoreKitService } from "@/src/storekit/StoreKitService";
+import { StoreKitService, type DeepPrepProduct } from "@/src/storekit/StoreKitService";
 import { HapticsService } from "@/src/haptics/HapticsService";
 
 const FEATURES = [
@@ -25,6 +25,15 @@ export default function Paywall() {
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [product, setProduct] = useState<DeepPrepProduct | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    StoreKitService.loadProducts().then((items) => {
+      if (mounted) setProduct(items[0] || null);
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   const onContinue = async () => {
     setLoading(true);
@@ -36,7 +45,7 @@ export default function Paywall() {
       if (ent.active) {
         router.replace("/brief/generating?from=onboarding");
       } else {
-        setMsg("Purchase could not be completed. Please try again.");
+        setMsg("Purchase is pending or could not be completed. If Apple shows success, your report will unlock automatically.");
       }
     } catch {
       setMsg("Something went wrong. Please try again.");
@@ -81,13 +90,13 @@ export default function Paywall() {
 
         <View style={styles.priceCard}>
           <View style={styles.priceRow}>
-            <Text style={styles.price}>{StoreKitService.pricing.introPrice}</Text>
+            <Text style={styles.price}>{product?.priceLabel || StoreKitService.pricing.introPrice}</Text>
             <View style={styles.introTag}>
               <Text style={styles.introTagText}>FIRST 3 DAYS</Text>
             </View>
           </View>
           <Text style={styles.priceSub}>
-            Then {StoreKitService.pricing.recurringPrice} / {StoreKitService.pricing.recurringPeriod} · Cancel anytime
+            {product?.recurringLabel || `Then ${StoreKitService.pricing.recurringPrice} / ${StoreKitService.pricing.recurringPeriod}`} · Cancel anytime
           </Text>
           <Text style={styles.creditNote}>Includes 1 Intel Credit now, then 6 Intel Credits every week.</Text>
         </View>

@@ -63,6 +63,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [deviceId]);
 
   useEffect(() => {
+    let stopStoreKitListener = () => {};
     (async () => {
       const id = await Repository.getDeviceId();
       setDeviceId(id);
@@ -70,8 +71,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setFreeScanUsed(await Repository.isFreeScanUsed());
       await refreshEntitlement(id);
       await refreshReports(id);
+      stopStoreKitListener = StoreKitService.listenForPurchaseUpdates(id, (ent) => setEntitlement(ent));
       setReady(true);
     })();
+    return () => stopStoreKitListener();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -92,15 +95,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const unlockPro = useCallback(async () => {
-    const ent = await StoreKitService.purchase(deviceId);
-    setEntitlement(ent);
-    return ent;
+    const result = await StoreKitService.purchase(deviceId);
+    if (result.entitlement) {
+      setEntitlement(result.entitlement);
+      return result.entitlement;
+    }
+    if (result.pending) {
+      const ent = await StoreKitService.current(deviceId);
+      setEntitlement(ent);
+      return ent;
+    }
+    throw new Error(result.error || "Purchase could not be completed.");
   }, [deviceId]);
 
   const restorePurchases = useCallback(async () => {
-    const ent = await StoreKitService.restore(deviceId);
-    setEntitlement(ent);
-    return ent;
+    const result = await StoreKitService.restore(deviceId);
+    if (result.entitlement) {
+      setEntitlement(result.entitlement);
+      return result.entitlement;
+    }
+    throw new Error(result.error || "No active subscription found.");
   }, [deviceId]);
 
   const devResetForTesting = useCallback(async () => {
