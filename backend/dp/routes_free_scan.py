@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException
 from .models import FreeScanEligibilityIn, FreeScanCreateIn
 from .services import free_scan_service
+from .services import security
 from .services.llm_provider import LLMConfigError
 from .services.search_provider import SearchConfigError, SearchProviderError
 from . import db
@@ -50,6 +51,7 @@ async def create(body: FreeScanCreateIn, request: Request):
         raise HTTPException(status_code=503, detail={"message": str(e), "reason": "llm_not_configured"})
     except Exception as e:
         raise HTTPException(status_code=500, detail={"message": str(e), "reason": "generation_failed"})
+    await security.record_cost_event(device_id=device_id, kind="free_scan", report_id=report.id, interview_id=getattr(report, "interviewId", None), cost=report.cost.model_dump() if hasattr(report.cost, "model_dump") else dict(report.cost or {}))
     return report.model_dump()
 
 

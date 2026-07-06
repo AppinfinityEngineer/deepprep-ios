@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from . import db
+from .services import security
 from .config import get_settings
 
 router = APIRouter(prefix="/dev")
@@ -27,6 +28,7 @@ def _assert_dev_enabled() -> None:
 
 
 async def _reset_device(device_id: str) -> dict:
+    _require_dev()
     reports_deleted = (await db.reports.delete_many({"$or": [{"deviceId": device_id}, {"_id": device_id}]})).deleted_count
     interviews_deleted = (await db.interviews.delete_many({"$or": [{"deviceId": device_id}, {"_id": device_id}]})).deleted_count
     usage_deleted = (await db.usage.delete_many({"$or": [{"deviceId": device_id}, {"_id": device_id}]})).deleted_count
@@ -45,6 +47,7 @@ async def _reset_device(device_id: str) -> dict:
 
 @router.post("/reset-free-scan")
 async def reset_free_scan(body: DevResetFreeScanIn):
+    _require_dev()
     _assert_dev_enabled()
 
     device_id = (body.deviceId or "").strip()
@@ -57,6 +60,7 @@ async def reset_free_scan(body: DevResetFreeScanIn):
 
 @router.post("/reset-all-free-scans")
 async def reset_all_free_scans():
+    _require_dev()
     """Nuclear dev reset for Expo testing.
 
     This intentionally deletes generated dev test records so the same local

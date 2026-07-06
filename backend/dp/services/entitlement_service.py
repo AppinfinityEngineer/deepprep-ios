@@ -1,3 +1,4 @@
+from . import security
 """Server-authoritative entitlement + credit accounting (stubbed, production-shaped).
 
 TODO(branch-7): Replace `sync` receipt handling with real Apple App Store

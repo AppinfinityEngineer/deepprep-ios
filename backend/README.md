@@ -207,3 +207,27 @@ Real LLM validation focus:
 ### Branch 5 full-report cost/speed hotfix
 
 Full paid-report generation now uses a focused live-search budget: roughly 2 company queries plus 3-4 person queries per interviewer at basic search depth. This keeps reports useful while reducing Tavily spend and latency. The LLM prompt also softens people-related claims unless titles/snippets explicitly support them.
+
+## Branch 6 backend security / credit caps
+
+Security behaviours now enforced server-side:
+
+- `GET /api/reports/{report_id}` requires `deviceId` and only returns reports owned by that device.
+- Free scans and paid reports have simple per-device generation caps to prevent accidental hammering in dev/pre-StoreKit.
+- Dev reset/dev mock unlock routes are guarded by `APP_ENV=development` and `ALLOW_DEV_MOCK_UNLOCK=true`.
+- Successful free scan and paid report generations write cost audit events to `cost_events`.
+- Paid-report credits remain server-authoritative and are refunded on generation failure.
+
+Useful checks after deploy:
+
+```powershell
+curl.exe -i -X POST "https://deepprep-ios-dev.onrender.com/api/dev/reset-all-free-scans" `
+  -H "Content-Type: application/json" `
+  -d "{}"
+
+curl.exe "https://deepprep-ios-dev.onrender.com/api/reports/<REPORT_ID>?deviceId=<CORRECT_DEVICE_ID>"
+curl.exe -i "https://deepprep-ios-dev.onrender.com/api/reports/<REPORT_ID>?deviceId=wrong-device"
+```
+
+Expected wrong-device report read result: `404`.
+
