@@ -24,8 +24,9 @@ export const PRICING = {
   recurringPeriod: "week",
 };
 
-// Local development only. Must remain false in production/TestFlight envs.
-const DEV_MOCK_UNLOCK = process.env.EXPO_PUBLIC_DEV_MOCK_UNLOCK === "true";
+// Local development only. This must remain false for production/TestFlight.
+// Branch 7 removes this path from release builds when native StoreKit is wired.
+const DEV_MOCK_UNLOCK = __DEV__ && process.env.EXPO_PUBLIC_DEV_MOCK_UNLOCK === "true";
 
 export const StoreKitService = {
   productId: PRODUCT_ID,

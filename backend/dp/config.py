@@ -55,6 +55,9 @@ class Settings:
         self.apple_private_key: str = os.environ.get("APPLE_PRIVATE_KEY", "")
         self.app_attest_enabled: bool = _flag("APP_ATTEST_ENABLED", "false")
 
+        # Local-only purchase/testing escape hatch. Never allow this outside development.
+        self.allow_dev_mock_unlock: bool = self.app_env == "development" and _flag("ALLOW_DEV_MOCK_UNLOCK", "true")
+
     @property
     def has_llm_key(self) -> bool:
         return bool(self.openai_api_key or self.anthropic_api_key)

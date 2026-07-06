@@ -7,7 +7,7 @@ the source of truth for paid access — this service is.
 from typing import Dict
 from .. import db
 from ..config import get_settings
-from ..utils import now_iso, today_key, week_key
+from ..utils import now_iso, week_key
 
 ENTITLEMENT_ID = "deepprep_pro"
 INTRO_CREDITS = 1
@@ -35,14 +35,14 @@ async def sync(device_id: str, receipt, product_id, dev_mock_unlock: bool) -> Di
     settings = get_settings()
     ent = await get_entitlement(device_id)
 
-    # Determine whether this is a valid paid unlock.
+    # Branch 7 will perform real Apple validation. Until then, a receipt-like
+    # payload is treated as verified only outside production. In production this
+    # endpoint must not grant access until real validation lands.
     is_production = settings.app_env == "production"
-    # In production, only a verified receipt unlocks. dev_mock_unlock is ignored.
-    verified = bool(receipt)  # TODO(branch-4): verify receipt with Apple.
-    if is_production:
-        active = verified
-    else:
-        active = verified or dev_mock_unlock
+    dev_unlock_allowed = settings.allow_dev_mock_unlock and bool(dev_mock_unlock)
+    verified = bool(receipt) and not is_production
+
+    active = verified or dev_unlock_allowed
 
     if active and not ent.get("active"):
         # First activation: grant intro credit + first weekly allotment.
@@ -92,6 +92,7 @@ async def consume_credits(device_id: str, cost: int, spend_gbp: float = 0.0) -> 
 
 async def _usage_doc(device_id: str) -> Dict:
     doc = await db.usage.find_one({"_id": device_id}, {"_id": 0})
+    from ..utils import today_key
     tk, wk = today_key(), week_key()
     if not doc or doc.get("daily", {}).get("key") != tk:
         doc = doc or {}
