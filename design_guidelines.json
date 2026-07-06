@@ -1,0 +1,177 @@
+{
+  "app_name": "DeepPrep: Interview Prep AI",
+  "personality": "7 Dark-First Utility with 6 Glass / Luxe spacing",
+  "personality_one_liner": "An executive intelligence-briefing tool that feels like a premium, high-trust classified dossier with calm Apple-like typography and stark contrast.",
+  "color": {
+    "surface": "#050505",
+    "onSurface": "#F5F5F5",
+    "surfaceSecondary": "#111111",
+    "onSurfaceSecondary": "#A3A3A3",
+    "surfaceTertiary": "#171717",
+    "onSurfaceTertiary": "#F5F5F5",
+    "surfaceInverse": "#FFFFFF",
+    "onSurfaceInverse": "#000000",
+    "brand": "#FF2D2D",
+    "brandPrimary": "#FFFFFF",
+    "onBrandPrimary": "#000000",
+    "brandSecondary": "#FF2D2D",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#2A2A2A",
+    "onBrandTertiary": "#F5F5F5",
+    "success": "#20C06B",
+    "onSuccess": "#FFFFFF",
+    "warning": "#F5B83D",
+    "onWarning": "#000000",
+    "error": "#FF4D4D",
+    "onError": "#FFFFFF",
+    "info": "#111111",
+    "onInfo": "#F5F5F5",
+    "border": "#2A2A2A",
+    "borderStrong": "#6B6B6B",
+    "divider": "#2A2A2A"
+  },
+  "typography": {
+    "displayFontFamily": "Geist",
+    "textFontFamily": "Geist",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Apple-style generous spacing for a premium feel. Use generous padding (lg/xl) around elements and avoid cramped dashboard utility styling.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "pill": 999
+  },
+  "shadow_tier": "0",
+  "navigation": "bottom_tabs",
+  "icon_set": "Feather",
+  "glassmorphism": {
+    "enabled": "true",
+    "do's": [
+      "Use glassmorphism selectively for the bottom tab bar and sticky headers to create Apple-like premium depth over black backgrounds."
+    ],
+    "dont's": [
+      "Do not use blur on body cards, inputs, or data cards; keep the utility stark, solid, and highly readable."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Splash",
+      "purpose": "Establish the premium executive intelligence vibe immediately.",
+      "states": {
+        "loading": "Static splash mark with subtle fade in.",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Center a red radar/target mark on a pure #050505 black background. Use white headline typography reading 'DeepPrep — Interview intelligence from public web research'. No other UI chrome."
+    },
+    {
+      "name": "Onboarding",
+      "purpose": "Long premium wizard collecting job situation, level, industry, date, interviewers, and JD evidence.",
+      "states": {
+        "loading": "N/A",
+        "empty": "Empty text areas and inputs.",
+        "error": "Red validation text for missing required fields."
+      },
+      "layout": "Use a sequence of screens with a progress dot indicator at the top. Use thin-bordered rounded cards (#111111 background with #2A2A2A border) for single-select option rows (with chevron) and multi-select concern chips. Large text areas for JD evidence must include a character counter. Primary CTA pinned to the bottom must be WHITE with BLACK text."
+    },
+    {
+      "name": "Progress Theatre",
+      "purpose": "Animated sequential checklist mimicking a deep-web scan.",
+      "states": {
+        "loading": "Active scanning state animating through checklist items.",
+        "empty": "N/A",
+        "error": "Scan failure message with retry."
+      },
+      "layout": "Vertical list of steps: 'Finding company', 'Matching interviewer', 'Checking freshness', 'Preparing brief'. Highlight current step in white, pending in textSecondary (#A3A3A3). Add a checkmark and trigger haptics as each step completes."
+    },
+    {
+      "name": "Scan Result",
+      "purpose": "Free limited intel scan result card showing match confidence and key insights.",
+      "states": {
+        "loading": "Skeleton loaders matching card shapes.",
+        "empty": "N/A",
+        "error": "Error fetching scan data."
+      },
+      "layout": "Central dashboard layout. Top area features a match-confidence meter. Below, use thin bordered cards for role freshness, 3 key insights (bulleted list), 1 likely question, and 1 talking point. Use success (#20C06B) and warning (#F5B83D) text sparingly for data points."
+    },
+    {
+      "name": "Review & Paywall",
+      "purpose": "Dedicated feedback prompt followed by a hard paywall to unlock the full report.",
+      "states": {
+        "loading": "N/A",
+        "empty": "N/A",
+        "error": "Purchase failure alert."
+      },
+      "layout": "Review screen asks 'Enjoying DeepPrep?' with a love-it/continue flow. The Paywall screen completely blocks access with NO close/X button. Dark charcoal (#111111) background. Features checklist uses white text. The CTA must be RED (#FF2D2D) with white text reading 'Continue to Full Report'."
+    },
+    {
+      "name": "Home",
+      "purpose": "Main dashboard showing upcoming interviews and past briefs.",
+      "states": {
+        "loading": "Skeleton cards for next interview and recent list.",
+        "empty": "Empty state illustration using a subtle dark abstract SVG and 'Start your first brief' CTA.",
+        "error": "Error fetching briefs, with a retry button."
+      },
+      "layout": "Top section: large hero card for 'Next Interview' with a countdown timer. Middle section: 'Credits remaining' pill indicator. Bottom section: Vertical list of 'Recent Briefs' inside thin-bordered cards. Bottom tab nav included (Home, Briefs, Alerts, Settings)."
+    },
+    {
+      "name": "Report",
+      "purpose": "Tabbed premium intelligence report interface.",
+      "states": {
+        "loading": "Tabbed skeleton views.",
+        "empty": "N/A",
+        "error": "Failed to load report data."
+      },
+      "layout": "Sticky header with Segmented Control or top tabs (Overview, Dossiers, Questions, Day-of). The 'Interviewer Dossier' tab uses cards featuring an avatar, MATCH/FRESH badges (using success/warning colors), and a vertical career path timeline using subtle left borders."
+    }
+  ],
+  "images": {
+    "splash_radar": {
+      "url": "https://images.unsplash.com/photo-1625685554603-7f2dddb61e92",
+      "alt": "red and white light streaks abstract radar"
+    },
+    "interviewer_avatar": {
+      "url": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBleGVjdXRpdmUlMjBhdmF0YXIlMjBwb3J0cmFpdCUyMGRhcmt8ZW58MHx8fHwxNzgyNjE0MDQyfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "man wearing black notched lapel suit jacket professional executive avatar"
+    }
+  },
+  "instructions_to_main_agent": [
+    "STRICT COLOR ENFORCEMENT: Only use the exact colors requested. background #050505, surface #111111, surfaceRaised #171717, border #2A2A2A. Use #F5F5F5 for primary text, #A3A3A3 for secondary text, and #6B6B6B for muted text. No other grays.",
+    "No gradients allowed anywhere unless extremely subtle. Do not use purple or blue SaaS styling.",
+    "Do not use ANY emojis in the UI. Strictly use Feather icons from @expo/vector-icons.",
+    "BUTTONS: Primary CTA buttons during onboarding MUST be WHITE with black text. The Paywall CTA MUST be RED (#FF2D2D) with white text. Secondary buttons should use #111111 background with white text.",
+    "BORDERS & CARDS: Cards must use thin borders (borderWidth: 1, borderColor: '#2A2A2A') with rounded corners (md or lg) and no heavy shadows.",
+    "PAYWALL: The Paywall screen is a HARD paywall. There must be NO close or X button. Users cannot dismiss it without paying.",
+    "PROGRESS THEATRE: Implement a staggered animation for the scanning progress checklist, ensuring haptic feedback fires as each step (finding company -> matching interviewer -> checking freshness -> preparing brief) completes.",
+    "DOSSIER: On the Interviewer Dossier tab, make sure the MATCH and FRESH badges use the success (#20C06B) and warning (#F5B83D) colors respectively to stand out against the dark UI.",
+    "No childish illustrations. Only use premium, professional, and subtle visual treatments."
+  ]
+}
