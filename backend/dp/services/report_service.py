@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import time
 from typing import Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 from ..models import (
     CompanyBrief,
@@ -17,6 +18,9 @@ from ..models import (
 )
 from . import candidate_ranker, company_resolver, cost_tracker, freshness, llm_provider, person_discovery
 from .search_provider import SearchProvider
+
+
+_NOISY_SOURCE_DOMAINS = {"youtube.com", "youtu.be", "wikipedia.org", "en.wikipedia.org"}
 
 
 def hydrate_interviewer_evidence(
@@ -50,13 +54,23 @@ async def _run_pipeline(
     mode: str = "full",
 ) -> Tuple[SearchProvider, List[PersonCandidate], List[InterviewerIn], Dict, List[Dict]]:
     provider = SearchProvider()
-    company_max = 2 if mode == "free_scan" else 4
-    company_resolution = await company_resolver.resolve_company(company, provider, role=role, max_queries=company_max)
+    is_free = mode == "free_scan"
+    company_max = 1 if is_free else 4
+    company_results = 2 if is_free else 4
+    search_depth = "basic" if is_free else "advanced"
+    company_resolution = await company_resolver.resolve_company(
+        company,
+        provider,
+        role=role,
+        max_queries=company_max,
+        max_results_per_query=company_results,
+        search_depth=search_depth,
+    )
     hydrated = hydrate_interviewer_evidence(interviewers, profile_url, profile_text, limit=limit)
     candidates: List[PersonCandidate] = []
     discoveries: List[Dict] = []
-    person_query_max = 4 if mode == "free_scan" else 8
-    results_per_query = 3 if mode == "free_scan" else 4
+    person_query_max = 2 if is_free else 8
+    results_per_query = 2 if is_free else 4
     for iv in hydrated:
         discovery = await person_discovery.discover(
             iv,
@@ -65,6 +79,7 @@ async def _run_pipeline(
             provider,
             max_queries=person_query_max,
             max_results_per_query=results_per_query,
+            search_depth=search_depth,
         )
         cand = candidate_ranker.score_candidate(iv, company, role, discovery)
         cand = freshness.apply_freshness(cand, iv)
@@ -77,8 +92,33 @@ def _match_label(conf: str) -> str:
     return {"high": "High", "medium": "Medium", "low": "Low", "unknown": "Unclear"}.get(conf, "Unclear")
 
 
+def _score_label(score: int) -> str:
+    if score >= 85:
+        return "High"
+    if score >= 65:
+        return "Medium"
+    if score >= 40:
+        return "Low"
+    return "Unclear"
+
+
 def _status_label(status: str) -> str:
     return status.replace("_", " ").title().replace("From", "from")
+
+
+def _free_scan_display_score(primary: Optional[PersonCandidate]) -> int:
+    if not primary:
+        return 0
+    score = int(primary.identityScore or 0)
+    stale_or_unclear = (
+        primary.currentRoleFreshness in ("low", "unknown")
+        or primary.currentRoleStatus in ("unknown", "stale_public_data", "conflicting")
+    )
+    if stale_or_unclear:
+        return min(score, 64)
+    if primary.currentRoleFreshness == "medium":
+        return min(score, 82)
+    return min(score, 95)
 
 
 def _free_freshness_note(primary: Optional[PersonCandidate]) -> str:
@@ -91,7 +131,7 @@ def _free_freshness_note(primary: Optional[PersonCandidate]) -> str:
     if primary.identityConfidence in ("low", "unknown"):
         return "We found limited public evidence for this exact person/company match. Treat this as a preview, not a final confirmation."
     if primary.currentRoleFreshness in ("low", "unknown"):
-        return "Public professional data may lag job moves. Confirm the exact current title naturally."
+        return "Public data suggests a possible identity match, but current title freshness is unverified. Confirm the exact current title naturally."
     return "Public professional sources were used for current-role freshness. Confirm naturally if the role matters."
 
 
@@ -101,14 +141,21 @@ def _source_notes(company_resolution: Dict, discoveries: List[Dict], profile_use
     for disc in discoveries:
         domains.update(disc.get("domains", []))
         urls.extend(disc.get("urls", []))
+
+    clean_domains = [d for d in sorted(domains) if d and _normal_domain(d) not in _NOISY_SOURCE_DOMAINS]
     notes = [
         SourceNote(
             label="Live public web search",
-            detail=f"Reviewed public results across {len(domains)} source domain(s): {', '.join(sorted(domains)[:6]) or 'none returned'}.",
+            detail=(
+                f"Reviewed a focused preview set across {len(domains)} public source domain(s). "
+                f"Strongest signals: {', '.join(clean_domains[:4]) or 'limited public source signal'}."
+            ),
         )
     ]
-    for url in urls[:3]:
-        notes.append(SourceNote(label="Source", detail=url))
+
+    for url in _prioritised_source_urls(urls)[:3]:
+        notes.append(SourceNote(label=_source_label(url), detail=_source_detail(url)))
+
     if profile_used:
         notes.append(
             SourceNote(
@@ -117,6 +164,71 @@ def _source_notes(company_resolution: Dict, discoveries: List[Dict], profile_use
             )
         )
     return notes
+
+
+def _prioritised_source_urls(urls: List[str]) -> List[str]:
+    def score(url: str) -> int:
+        d = _normal_domain(url)
+        lower = url.lower()
+        if d in _NOISY_SOURCE_DOMAINS:
+            return -100
+        if "linkedin.com/in" in lower:
+            return 100
+        if "linkedin.com/company" in lower:
+            return 90
+        if "company-information.service.gov.uk" in lower or "companieshouse" in lower:
+            return 80
+        if d.endswith(".com") or d.endswith(".co.uk"):
+            return 50
+        return 10
+
+    seen: set[str] = set()
+    filtered: List[str] = []
+    for url in urls:
+        clean = (url or "").strip()
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        if score(clean) <= -100:
+            continue
+        filtered.append(clean)
+    return sorted(filtered, key=score, reverse=True)
+
+
+def _source_label(url: str) -> str:
+    lower = url.lower()
+    if "linkedin.com/in" in lower:
+        return "Professional profile result"
+    if "linkedin.com/company" in lower:
+        return "Company LinkedIn result"
+    if "company-information.service.gov.uk" in lower or "companieshouse" in lower:
+        return "UK company registry result"
+    return "Professional web result"
+
+
+def _source_detail(url: str) -> str:
+    domain = _normal_domain(url)
+    if "linkedin.com/in" in url.lower():
+        return "LinkedIn profile-style result found. Full report checks it against more sources."
+    if "linkedin.com/company" in url.lower():
+        return f"Company profile signal from {domain}."
+    if "company-information.service.gov.uk" in url.lower() or "companieshouse" in url.lower():
+        return "Public UK company registry signal found."
+    return f"Public professional source signal from {domain}."
+
+
+def _normal_domain(value: str) -> str:
+    raw = (value or "").strip().lower()
+    if not raw:
+        return ""
+    try:
+        if "://" in raw:
+            host = urlparse(raw).netloc.lower()
+        else:
+            host = raw.split("/")[0]
+        return host[4:] if host.startswith("www.") else host
+    except Exception:
+        return raw
 
 
 def _search_powered_free_scan_data(
@@ -128,19 +240,26 @@ def _search_powered_free_scan_data(
     llm_data: Dict,
 ) -> Dict:
     """Make free scan copy use live Tavily evidence even while LLM is mocked."""
-    domains = company_resolution.get("sourceDomains", [])
+    domains = [d for d in company_resolution.get("sourceDomains", []) if _normal_domain(d) not in _NOISY_SOURCE_DOMAINS]
     titles = company_resolution.get("topTitles", [])[:3]
     person_titles = (primary_discovery or {}).get("topTitles", [])[:3]
     insights: List[str] = []
 
     if domains:
-        insights.append(f"DeepPrep reviewed live public results for {company} across {', '.join(domains[:3])}.")
+        insights.append(f"DeepPrep checked a focused live preview for {company} across {', '.join(domains[:3])}.")
     if primary:
-        insights.append(
-            f"Interviewer match is {_match_label(primary.identityConfidence).lower()} confidence ({primary.identityScore}/100) based on returned source evidence."
-        )
-        if primary.sourceDomains:
-            insights.append(f"Professional signals were found on: {', '.join(primary.sourceDomains[:3])}.")
+        display_score = _free_scan_display_score(primary)
+        if primary.currentRoleFreshness in ("low", "unknown"):
+            insights.append(
+                f"Possible interviewer identity match found ({display_score}/100), but current title freshness needs confirmation."
+            )
+        else:
+            insights.append(
+                f"Interviewer match is {_score_label(display_score).lower()} confidence ({display_score}/100) based on returned source evidence."
+            )
+        clean_source_domains = [d for d in primary.sourceDomains if _normal_domain(d) not in _NOISY_SOURCE_DOMAINS]
+        if clean_source_domains:
+            insights.append(f"Professional signals were found on: {', '.join(clean_source_domains[:3])}.")
     if titles:
         insights.append(f"Company signal found: {titles[0][:110]}.")
     if person_titles:
@@ -155,7 +274,7 @@ def _search_powered_free_scan_data(
 
     likely_question = llm_data.get("likelyQuestion") or f"How would your {role} experience help {company} right now?"
     if primary and primary.currentRoleFreshness in ("low", "unknown"):
-        talking_point = "Use the professional themes from the scan, but avoid asserting the exact current title unless the interviewer confirms it."
+        talking_point = "Reference broad professional themes from the scan, but do not state the exact current title unless confirmed."
     elif primary and primary.currentRoleStatus == "verified_from_user_profile_evidence":
         talking_point = "Lead with role-relevant evidence from the supplied profile and connect it to one measurable work story."
     else:
@@ -240,7 +359,7 @@ async def build_free_scan_report(
     profile_url: Optional[str] = None,
     profile_text: Optional[str] = None,
 ) -> Report:
-    """Limited scan: 1 company, 1 interviewer, reduced queries + output."""
+    """Limited scan: cheaper preview: 1 company query + 2 person queries."""
     start = time.time()
     provider, candidates, hydrated_interviewers, company_resolution, discoveries = await _run_pipeline(
         company, role, interviewers, limit=1, profile_url=profile_url, profile_text=profile_text, mode="free_scan"
@@ -260,8 +379,7 @@ async def build_free_scan_report(
     llm_data = await llm_provider.synthesize(ctx, mode="free_scan")
     data = _search_powered_free_scan_data(company, role, company_resolution, primary, primary_discovery, llm_data)
 
-    match_conf = primary.identityConfidence if primary else "unknown"
-    match_pct = primary.identityScore if primary else 0
+    display_score = _free_scan_display_score(primary)
     fresh = primary.currentRoleFreshness if primary else "unknown"
     status = primary.currentRoleStatus if primary else "unknown"
     evidence_used = status == "verified_from_user_profile_evidence"
@@ -269,8 +387,8 @@ async def build_free_scan_report(
     note = _free_freshness_note(primary)
 
     summary = FreeScanSummary(
-        matchConfidence=match_pct,
-        matchLabel=_match_label(match_conf),
+        matchConfidence=display_score,
+        matchLabel=_score_label(display_score),
         roleFreshness=_match_label(fresh),
         currentRoleStatus=_status_label(status),
         recommendedAction=action,
@@ -289,8 +407,9 @@ async def build_free_scan_report(
         executiveSummary="Free Intel Scan preview. Unlock the full report for complete intelligence.",
         freeScanSummary=summary,
         confidenceNotes=[
-            "This is a limited preview based on one interviewer and a reduced live-search query pack.",
-            *(primary.evidenceSignals[:2] if primary else []),
+            "This is a limited preview using a cost-capped live-search query pack.",
+            "Identity match confidence is shown separately from current-role freshness.",
+            *(primary.evidenceSignals[:1] if primary else []),
         ],
         freshnessNotes=[note],
         sourceNotes=_source_notes(company_resolution, discoveries, profile_used),

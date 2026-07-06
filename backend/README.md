@@ -145,3 +145,22 @@ curl -X POST "$BASE_URL/api/dev/reset-all-free-scans" \
 ```
 
 This deletes dev devices, usage, interviews, reports, and entitlements in the development database only. It returns 404 unless development dev-unlock is enabled.
+
+## Free scan confidence/cost polish proof
+
+Branch goal: keep onboarding free-scan cheap and honest.
+
+Before every manual test in development, reset the dev scan state:
+
+```powershell
+curl.exe -i -X POST "https://deepprep-ios-dev.onrender.com/api/dev/reset-all-free-scans" `
+  -H "Content-Type: application/json" `
+  -d "{}"
+```
+
+Expected free-scan behavior:
+- Uses a cost-capped preview query pack: 1 company query + 2 interviewer queries.
+- Uses Tavily `basic` search depth for the free scan; paid full reports keep deeper search.
+- Shows a display confidence that is capped when current-role freshness is stale/unclear.
+- Filters noisy sources such as YouTube/Wikipedia from prominent source notes.
+```

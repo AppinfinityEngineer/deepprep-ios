@@ -31,11 +31,11 @@ def query_pack(interviewer: InterviewerIn, company: str, role: str, *, max_queri
     role_tokens = _tokens(role)
     domain_terms = " ".join(role_tokens[:3]) if role_tokens else role
 
+    # Ordered from cheapest/highest-signal to deeper paid-report research.
     queries = [
-        f"{quoted_name} {quoted_company}",
         f"{quoted_name} {quoted_company} LinkedIn",
-        f"site:linkedin.com/in {quoted_name} {quoted_company}",
         f"{quoted_name} {quoted_company} {title_or_role}",
+        f"site:linkedin.com/in {quoted_name} {quoted_company}",
         f"{quoted_name} {quoted_company} {domain_terms}",
         f"{quoted_name} {quoted_company} director manager lead engineering data technology",
         f"{quoted_name} {quoted_company} conference podcast blog github medium",
@@ -54,9 +54,14 @@ async def discover(
     *,
     max_queries: int = 8,
     max_results_per_query: int = 4,
+    search_depth: str = "advanced",
 ) -> Dict:
     queries = query_pack(interviewer, company, role, max_queries=max_queries)
-    hits = await provider.search_pack(queries, max_results_per_query=max_results_per_query, search_depth="advanced")
+    hits = await provider.search_pack(
+        queries,
+        max_results_per_query=max_results_per_query,
+        search_depth=search_depth,
+    )
 
     name = interviewer.name.strip()
     title_tokens = _tokens(interviewer.title)
@@ -120,9 +125,9 @@ async def discover(
 
 
 def _hit_label(hit: Dict) -> str:
-    title = (hit.get("title") or "Untitled source").strip()
-    domain = (hit.get("domain") or "unknown source").strip()
-    return f"{title} ({domain})"
+    title = hit.get("title") or hit.get("url") or "source"
+    domain = hit.get("domain") or "unknown-domain"
+    return f"{title[:90]} ({domain})"
 
 
 def _dedupe(items: List[str]) -> List[str]:
