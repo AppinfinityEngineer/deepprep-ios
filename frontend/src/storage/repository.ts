@@ -19,6 +19,19 @@ function uuid(): string {
   });
 }
 
+function freshDevId(): string {
+  return `dev-${Date.now()}-${uuid()}`;
+}
+
+async function clearLocalFlowState() {
+  await Promise.all([
+    storage.secureRemove(KEYS.freeScanUsed),
+    storage.secureRemove(KEYS.freeScanReportId),
+    storage.removeItem(KEYS.onboardingDone),
+    storage.removeItem(KEYS.reviewState),
+  ]);
+}
+
 export const Repository = {
   // Anonymous device id — Keychain-backed via secureGet/secureSet, survives reinstall on iOS.
   async getDeviceId(): Promise<string> {
@@ -48,14 +61,16 @@ export const Repository = {
     return (await storage.secureGet<boolean>(KEYS.freeScanUsed, false)) === true;
   },
 
-  async resetForDev() {
-    await Promise.all([
-      storage.secureRemove(KEYS.deviceId),
-      storage.secureRemove(KEYS.freeScanUsed),
-      storage.secureRemove(KEYS.freeScanReportId),
-      storage.removeItem(KEYS.onboardingDone),
-      storage.removeItem(KEYS.reviewState),
-    ]);
+  async createFreshDevDeviceId(): Promise<string> {
+    const id = freshDevId();
+    await clearLocalFlowState();
+    // Do not remove the Keychain id and hope iOS clears it. Overwrite it.
+    await storage.secureSet(KEYS.deviceId, id);
+    return id;
+  },
+
+  async resetForDev(): Promise<string> {
+    return await this.createFreshDevDeviceId();
   },
 
   // Weighted review state.

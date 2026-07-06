@@ -44,7 +44,7 @@ export default function Settings() {
     try {
       await devResetForTesting();
       HapticsService.success();
-      setMsg("Dev free scan reset. Restart onboarding to test again.");
+      setMsg("Dev reset complete. A fresh test device ID was created.");
       router.replace("/onboarding");
     } catch {
       setMsg("Could not reset dev scan.");
@@ -94,7 +94,7 @@ export default function Settings() {
         <SettingRow icon="file-text" label="Terms of Service" onPress={() => router.push("/legal/terms")} testID="settings-terms" />
         <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL("mailto:support@thoughtsnaplabs.com")} testID="settings-support" />
         {__DEV__ ? (
-          <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Free Scan"} onPress={devReset} testID="settings-dev-reset" />
+          <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Scan + Fresh Device"} onPress={devReset} testID="settings-dev-reset" />
         ) : null}
         <SettingRow icon="trash-2" label={busy === "delete" ? "Deleting…" : "Delete My Data"} danger onPress={deleteData} testID="settings-delete" />
 

@@ -76,4 +76,7 @@ export const DeepPrepApi = {
 
   devResetFreeScan: (deviceId: string) =>
     http.post<{ ok: boolean; deviceId: string }>("/dev/reset-free-scan", { deviceId }),
+
+  devResetAllFreeScans: () =>
+    http.post<{ ok: boolean; mode: string }>("/dev/reset-all-free-scans", {}),
 };

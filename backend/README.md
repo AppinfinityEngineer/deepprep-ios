@@ -132,3 +132,16 @@ curl -X POST "$BASE_URL/api/dev/reset-free-scan" \
 ```
 
 This route deletes the test device row plus related reports, interviews, usage, and entitlements. It returns 404 outside development mode.
+
+
+### Development reset-all endpoint
+
+When `APP_ENV=development` and `ALLOW_DEV_MOCK_UNLOCK=true`, the backend exposes a nuclear dev reset endpoint for repeat Expo tests:
+
+```bash
+curl -X POST "$BASE_URL/api/dev/reset-all-free-scans" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+This deletes dev devices, usage, interviews, reports, and entitlements in the development database only. It returns 404 unless development dev-unlock is enabled.

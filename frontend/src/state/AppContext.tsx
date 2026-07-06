@@ -25,7 +25,7 @@ interface AppState {
   unlockPro: () => Promise<Entitlement>;
   restorePurchases: () => Promise<Entitlement>;
   refreshReports: () => Promise<void>;
-  devResetForTesting: () => Promise<void>;
+  devResetForTesting: () => Promise<string>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -109,12 +109,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         await DeepPrepApi.devResetFreeScan(oldId);
       } catch {
-        // Keep local reset useful even if the backend dev endpoint is not yet deployed.
+        // Backend may not have the dev route deployed yet. Continue local reset.
       }
     }
 
-    await Repository.resetForDev();
-    const newId = await Repository.getDeviceId();
+    try {
+      await DeepPrepApi.devResetAllFreeScans();
+    } catch {
+      // Reset-all is development-only and may not be deployed. Fresh local id still unblocks testing.
+    }
+
+    const newId = await Repository.createFreshDevDeviceId();
     setDeviceId(newId);
     setOnboardingDone(false);
     setFreeScanUsed(false);
@@ -122,6 +127,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setFreeScanReport(null);
     setReports([]);
     setDraftState(emptyDraft());
+    return newId;
   }, [deviceId]);
 
   return (

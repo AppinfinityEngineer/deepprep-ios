@@ -87,7 +87,7 @@ export default function ScanScreen() {
           <Button label="Unlock DeepPrep Pro" variant="white" onPress={() => router.replace("/paywall")} testID="scan-error-cta" style={{ marginTop: spacing.lg }} />
           {__DEV__ ? (
             <Button
-              label={resetting ? "Resetting…" : "Reset dev free scan"}
+              label={resetting ? "Resetting…" : "Reset & use fresh test device"}
               variant="ghost"
               onPress={resetDevScan}
               disabled={resetting}
