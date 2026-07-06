@@ -53,6 +53,8 @@ async def create_free_scan(
     jd_text,
     date,
     interviewers: List[InterviewerIn],
+    profile_url: Optional[str],
+    profile_text: Optional[str],
     ip: Optional[str],
     user_agent: Optional[str],
     attest_token: Optional[str],
@@ -61,16 +63,23 @@ async def create_free_scan(
     if not elig["eligible"]:
         raise FreeScanError(elig["message"], elig["reason"], elig.get("freeScanReportId"))
 
-    # Persist a lightweight interview record.
+    # Persist a lightweight interview record. Top-level profile evidence is
+    # hydrated onto the primary interviewer inside report_service so freshness
+    # scoring and stored interview rows agree.
     from ..models import Interview, Interviewer
+    hydrated_interviewers = report_service.hydrate_interviewer_evidence(
+        interviewers, profile_url, profile_text, limit=1
+    )
     interview = Interview(
         company=company, role=role, jdText=jd_text, date=date,
-        interviewers=[Interviewer(**iv.model_dump()) for iv in interviewers],
+        interviewers=[Interviewer(**iv.model_dump()) for iv in hydrated_interviewers],
         status="free_scan",
     )
     await db.interviews.update_one({"_id": interview.id}, {"$set": {**interview.model_dump(), "deviceId": device_id}}, upsert=True)
 
-    report = await report_service.build_free_scan_report(interview.id, company, role, jd_text, date, interviewers)
+    report = await report_service.build_free_scan_report(
+        interview.id, company, role, jd_text, date, interviewers, profile_url, profile_text
+    )
     await db.reports.update_one({"_id": report.id}, {"$set": {**report.model_dump(), "deviceId": device_id}}, upsert=True)
 
     await db.interviews.update_one({"_id": interview.id}, {"$set": {"reportId": report.id, "status": "ready", "updatedAt": now_iso()}})

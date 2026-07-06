@@ -7,6 +7,14 @@ import { ScreenContainer, Button, Card, Badge, SectionTitle, Bullet } from "@/sr
 import { ConfidenceMeter } from "@/src/components/ConfidenceMeter";
 import { useApp } from "@/src/state/AppContext";
 
+function toneForStatus(status: string) {
+  const s = status.toLowerCase();
+  if (s.includes("user-supplied") || s.includes("profile")) return "success";
+  if (s.includes("conflict") || s.includes("stale")) return "danger";
+  if (s.includes("latest")) return "warning";
+  return "neutral";
+}
+
 export default function ResultScreen() {
   const router = useRouter();
   const { freeScanReport } = useApp();
@@ -42,6 +50,19 @@ export default function ResultScreen() {
           <Text style={styles.freshLabel}>Role Freshness</Text>
           <Badge label={s.roleFreshness} tone={freshTone as any} />
         </View>
+        {s.currentRoleStatus ? (
+          <View style={styles.freshRow}>
+            <Text style={styles.freshLabel}>Current Role Status</Text>
+            <Badge label={s.currentRoleStatus} tone={toneForStatus(s.currentRoleStatus) as any} testID="scan-current-role-status" />
+          </View>
+        ) : null}
+        {s.profileEvidenceUsed ? (
+          <View style={styles.evidenceBox} testID="scan-profile-evidence-used">
+            <Badge label="PROFILE EVIDENCE USED" tone="accent" />
+            <Text style={styles.evidenceText}>Current-role freshness was upgraded from the profile evidence you supplied.</Text>
+          </View>
+        ) : null}
+        {s.freshnessNote ? <Text style={styles.noteText}>{s.freshnessNote}</Text> : null}
       </Card>
 
       <SectionTitle style={{ marginTop: spacing.xl }}>3 Key Insights</SectionTitle>
@@ -85,8 +106,11 @@ const styles = StyleSheet.create({
   title: { color: colors.textPrimary, fontSize: font.h2, fontWeight: font.bold, letterSpacing: -0.3 },
   company: { color: colors.textSecondary, fontSize: font.small, marginTop: 4 },
   sub: { color: colors.textSecondary, fontSize: font.body, marginTop: spacing.sm },
-  freshRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.md },
-  freshLabel: { color: colors.textSecondary, fontSize: font.small },
+  freshRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.md, gap: spacing.md },
+  freshLabel: { color: colors.textSecondary, fontSize: font.small, flex: 1 },
+  evidenceBox: { backgroundColor: colors.surfaceRaised, borderRadius: radius.md, padding: spacing.md, marginTop: spacing.md, gap: spacing.sm },
+  evidenceText: { color: colors.textSecondary, fontSize: font.small, lineHeight: 20 },
+  noteText: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18, marginTop: spacing.md },
   body: { color: colors.textPrimary, fontSize: font.body, lineHeight: 23 },
   lockNote: { backgroundColor: colors.surfaceRaised, borderRadius: radius.md, padding: spacing.lg, marginTop: spacing.xl },
   lockText: { color: colors.textSecondary, fontSize: font.small, lineHeight: 21 },

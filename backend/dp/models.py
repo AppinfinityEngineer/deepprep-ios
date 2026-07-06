@@ -60,6 +60,10 @@ class FreeScanSummary(BaseModel):
     matchConfidence: int
     matchLabel: str
     roleFreshness: str
+    currentRoleStatus: str = "unknown"
+    recommendedAction: str = "Confirm exact current title naturally"
+    profileEvidenceUsed: bool = False
+    freshnessNote: Optional[str] = None
     keyInsights: List[str]
     likelyQuestion: str
     talkingPoint: str
@@ -162,6 +166,8 @@ class FreeScanCreateIn(BaseModel):
     jdText: Optional[str] = None
     date: Optional[str] = None
     interviewers: List[InterviewerIn] = Field(default_factory=list)
+    profileUrl: Optional[str] = None
+    profileText: Optional[str] = None
     userAgent: Optional[str] = None
     attestToken: Optional[str] = None
 
@@ -173,6 +179,8 @@ class ReportCreateIn(BaseModel):
     jdText: Optional[str] = None
     date: Optional[str] = None
     interviewers: List[InterviewerIn] = Field(default_factory=list)
+    profileUrl: Optional[str] = None
+    profileText: Optional[str] = None
 
 
 class EntitlementSyncIn(BaseModel):

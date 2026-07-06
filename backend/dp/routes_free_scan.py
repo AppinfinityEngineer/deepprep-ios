@@ -32,6 +32,8 @@ async def create(body: FreeScanCreateIn, request: Request):
             body.jdText,
             body.date,
             body.interviewers,
+            body.profileUrl,
+            body.profileText,
             _client_ip(request),
             body.userAgent or request.headers.get("user-agent"),
             body.attestToken,

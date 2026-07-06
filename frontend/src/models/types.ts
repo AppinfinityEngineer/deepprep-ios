@@ -13,6 +13,10 @@ export interface FreeScanSummary {
   matchConfidence: number;
   matchLabel: string;
   roleFreshness: string;
+  currentRoleStatus?: string;
+  recommendedAction?: string;
+  profileEvidenceUsed?: boolean;
+  freshnessNote?: string;
   keyInsights: string[];
   likelyQuestion: string;
   talkingPoint: string;

@@ -219,14 +219,18 @@ function StepContent(props: any) {
       return (
         <StepBlock title="Paste the job description" subtitle="This helps DeepPrep generate role-specific questions and talking points.">
           <TextArea value={draft.jdText || ""} onChangeText={(t: string) => setDraft({ jdText: t })} placeholder="Paste the description or key responsibilities here…" testID="input-jd" />
-          <Text style={styles.uploadHint}>Upload profile or resume — coming soon</Text>
+          <Text style={styles.uploadHint}>Paste-only for v1. No uploads are required for your scan.</Text>
         </StepBlock>
       );
     case 8:
       return (
-        <StepBlock title="Add LinkedIn or profile evidence" subtitle="Fresh profile evidence helps DeepPrep avoid stale public data. You can skip this.">
+        <StepBlock
+          title="Add LinkedIn or profile evidence"
+          subtitle="Fresh profile evidence helps DeepPrep avoid stale public data. In v1 this applies to the first interviewer in your scan. You can skip this."
+        >
           <TextField label="Paste LinkedIn / profile URL" value={draft.profileUrl || ""} onChangeText={(t: string) => setDraft({ profileUrl: t })} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID="input-profile-url" />
-          <TextArea label="Paste profile text / headline" value={draft.profileText || ""} onChangeText={(t: string) => setDraft({ profileText: t })} placeholder="Paste the interviewer's headline or profile text…" maxLength={4000} testID="input-profile-text" />
+          <TextArea label="Paste profile text / headline" value={draft.profileText || ""} onChangeText={(t: string) => setDraft({ profileText: t })} placeholder="Paste the interviewer's current headline or profile text…" maxLength={4000} testID="input-profile-text" />
+          <Text style={styles.uploadHint}>DeepPrep labels this as user-supplied evidence, not externally verified data.</Text>
         </StepBlock>
       );
     default:

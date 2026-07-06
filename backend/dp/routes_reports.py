@@ -25,19 +25,23 @@ async def create_report(body: ReportCreateIn):
     if not consume["ok"]:
         raise HTTPException(status_code=402, detail={"reason": consume["reason"], "credits": consume["credits"]})
 
+    hydrated_interviewers = report_service.hydrate_interviewer_evidence(
+        body.interviewers, body.profileUrl, body.profileText, limit=4
+    )
     interview = Interview(
         company=body.company,
         role=body.role,
         jdText=body.jdText,
         date=body.date,
-        interviewers=[Interviewer(**iv.model_dump()) for iv in body.interviewers],
+        interviewers=[Interviewer(**iv.model_dump()) for iv in hydrated_interviewers],
         status="generating",
     )
     await db.interviews.update_one({"_id": interview.id}, {"$set": {**interview.model_dump(), "deviceId": body.deviceId}}, upsert=True)
 
     try:
         report = await report_service.build_full_report(
-            interview.id, body.company, body.role, body.jdText, body.date, body.interviewers
+            interview.id, body.company, body.role, body.jdText, body.date,
+            body.interviewers, body.profileUrl, body.profileText
         )
     except SearchConfigError as e:
         await _refund_failed_generation(body.deviceId, interview.id, cost)

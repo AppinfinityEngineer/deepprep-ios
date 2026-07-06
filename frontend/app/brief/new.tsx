@@ -19,6 +19,7 @@ export default function NewBrief() {
   const [date, setDate] = useState("");
   const [jd, setJd] = useState("");
   const [profileUrl, setProfileUrl] = useState("");
+  const [profileText, setProfileText] = useState("");
   const [interviewers, setInterviewers] = useState<Interviewer[]>([{ name: "" }]);
 
   const update = (i: number, patch: Partial<Interviewer>) =>
@@ -41,6 +42,7 @@ export default function NewBrief() {
       date: date.trim() || undefined,
       jdText: jd.trim() || undefined,
       profileUrl: profileUrl.trim() || undefined,
+      profileText: profileText.trim() || undefined,
       interviewers: interviewers.filter((i) => i.name.trim()),
     });
     router.push("/brief/generating?from=new");
@@ -78,7 +80,8 @@ export default function NewBrief() {
           ) : null}
 
           <TextArea label="Job description (optional)" value={jd} onChangeText={setJd} placeholder="Paste the job description…" testID="nb-jd" />
-          <TextField label="Profile / LinkedIn (optional)" value={profileUrl} onChangeText={setProfileUrl} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID="nb-profile" />
+          <TextField label="Primary interviewer LinkedIn / profile URL (optional)" value={profileUrl} onChangeText={setProfileUrl} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID="nb-profile" />
+          <TextArea label="Primary interviewer profile text / headline (optional)" value={profileText} onChangeText={setProfileText} placeholder="Paste current profile headline or text to improve freshness…" maxLength={4000} testID="nb-profile-text" />
 
           <Text style={styles.creditHint}>
             {interviewers.filter((i) => i.name.trim()).length >= 3 ? "Panel brief — 2 credits" : "Standard brief — 1 credit"} ·{" "}
