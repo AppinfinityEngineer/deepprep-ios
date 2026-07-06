@@ -82,6 +82,27 @@ export default function ResultScreen() {
         <Text style={styles.body}>{s.talkingPoint}</Text>
       </Card>
 
+      {freeScanReport.sourceNotes?.length ? (
+        <>
+          <SectionTitle style={{ marginTop: spacing.xl }}>Source Notes</SectionTitle>
+          <Card>
+            {freeScanReport.sourceNotes.slice(0, 4).map((note, i) => (
+              <View key={`${note.label}-${i}`} style={styles.sourceRow}>
+                <Text style={styles.sourceLabel}>{note.label}</Text>
+                <Text style={styles.sourceDetail}>{note.detail}</Text>
+              </View>
+            ))}
+          </Card>
+        </>
+      ) : null}
+
+      {freeScanReport.cost ? (
+        <Text style={styles.costText}>
+          Search proof: {freeScanReport.cost.searchQueryCount} live queries · {freeScanReport.cost.searchResultCount} public results · est. £
+          {freeScanReport.cost.estimatedTotalCostGbp.toFixed(3)}
+        </Text>
+      ) : null}
+
       <View style={styles.lockNote}>
         <Text style={styles.lockText}>
           This is a limited preview. The full report includes complete interviewer dossiers, company
@@ -112,6 +133,10 @@ const styles = StyleSheet.create({
   evidenceText: { color: colors.textSecondary, fontSize: font.small, lineHeight: 20 },
   noteText: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18, marginTop: spacing.md },
   body: { color: colors.textPrimary, fontSize: font.body, lineHeight: 23 },
+  sourceRow: { marginBottom: spacing.md },
+  sourceLabel: { color: colors.textPrimary, fontSize: font.tiny, fontWeight: font.bold, marginBottom: 4 },
+  sourceDetail: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18 },
+  costText: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18, textAlign: "center", marginTop: spacing.lg },
   lockNote: { backgroundColor: colors.surfaceRaised, borderRadius: radius.md, padding: spacing.lg, marginTop: spacing.xl },
   lockText: { color: colors.textSecondary, fontSize: font.small, lineHeight: 21 },
 });

@@ -91,3 +91,31 @@ The backend is the authority for:
 python -m py_compile server.py dp/*.py dp/services/*.py
 pytest
 ```
+
+## Branch 4 live Tavily proof
+
+Render/dev env for live search with mock synthesis:
+
+```env
+APP_ENV=development
+MONGO_URL=<Atlas URL>
+TAVILY_API_KEY=<Tavily key>
+ENABLE_MOCK_SEARCH=false
+ENABLE_MOCK_LLM=true
+ALLOW_DEV_MOCK_UNLOCK=true
+```
+
+Health proof:
+
+```bash
+curl.exe https://deepprep-ios-dev.onrender.com/api/health
+```
+
+Free scan proof with a disposable device id:
+
+```bash
+curl.exe -X POST https://deepprep-ios-dev.onrender.com/api/free-scan/create ^
+  -H "Content-Type: application/json" ^
+  -d "{"deviceId":"branch4-nick-sharp-001","company":"Confused.com","role":"Senior Data Engineer","interviewers":[{"name":"Nick Sharp","title":"Director of Data & Technology"}]}"
+```
+

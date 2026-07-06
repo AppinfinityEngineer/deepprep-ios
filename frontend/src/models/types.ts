@@ -65,6 +65,19 @@ export interface SourceNote {
   detail: string;
 }
 
+export interface ReportCost {
+  searchQueryCount: number;
+  searchResultCount: number;
+  llmProvider?: string | null;
+  llmModel?: string | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  estimatedSearchCostGbp: number;
+  estimatedLlmCostGbp: number;
+  estimatedTotalCostGbp: number;
+  generationSeconds: number;
+}
+
 export interface Report {
   id: string;
   interviewId: string;
@@ -82,6 +95,7 @@ export interface Report {
   confidenceNotes: string[];
   freshnessNotes: string[];
   sourceNotes: SourceNote[];
+  cost?: ReportCost;
 }
 
 export interface Entitlement {
