@@ -19,7 +19,7 @@ export default function ScanScreen() {
   const { deviceId, draft, setFreeScanReport, markFreeScanUsed } = useApp();
   const [theatreDone, setTheatreDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const reportReady = useRef(false);
+  const [reportReady, setReportReady] = useState(false);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function ScanScreen() {
         const report = await DeepPrepApi.freeScanCreate(deviceId, draft);
         setFreeScanReport(report);
         await markFreeScanUsed(report.id);
-        reportReady.current = true;
+        setReportReady(true);
         await ReviewService.record("free_scan_completed");
         if ((report.freeScanSummary?.matchConfidence ?? 0) >= 85) {
           await ReviewService.record("match_confidence_high");
@@ -50,11 +50,11 @@ export default function ScanScreen() {
   }, [deviceId, draft, setFreeScanReport, markFreeScanUsed]);
 
   useEffect(() => {
-    if (theatreDone && reportReady.current && !error) {
+    if (theatreDone && reportReady && !error) {
       HapticsService.success();
       router.replace("/onboarding/result");
     }
-  }, [theatreDone, error, router]);
+  }, [theatreDone, reportReady, error, router]);
 
   return (
     <SafeAreaView style={styles.screen} testID="scan-screen">
