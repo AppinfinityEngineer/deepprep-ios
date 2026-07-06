@@ -20,7 +20,7 @@ class LLMConfigError(RuntimeError):
     pass
 
 
-_TIMEOUT_SECONDS = 45.0
+_TIMEOUT_SECONDS = 35.0
 
 
 def _extract_json(text: str) -> Dict[str, Any]:
@@ -54,20 +54,20 @@ def _source_pack(ctx: Dict[str, Any]) -> str:
     candidates = ctx.get("candidates") or []
 
     compact_discoveries: List[Dict[str, Any]] = []
-    for d in discoveries[:4]:
+    for d in discoveries[:3]:
         compact_discoveries.append(
             {
-                "domains": d.get("domains", [])[:8],
-                "sourceTypes": d.get("sourceTypes", [])[:6],
-                "topTitles": d.get("topTitles", [])[:6],
-                "topSnippets": d.get("topSnippets", [])[:6],
+                "domains": d.get("domains", [])[:6],
+                "sourceTypes": d.get("sourceTypes", [])[:5],
+                "topTitles": d.get("topTitles", [])[:4],
+                "topSnippets": d.get("topSnippets", [])[:4],
                 "nameHitCount": d.get("nameHitCount", 0),
                 "companyHitCount": d.get("companyHitCount", 0),
                 "titleHitCount": d.get("titleHitCount", 0),
                 "roleHitCount": d.get("roleHitCount", 0),
-                "freshnessSignals": d.get("freshnessSignals", [])[:5],
-                "staleSignals": d.get("staleSignals", [])[:5],
-                "conflictSignals": d.get("conflictSignals", [])[:5],
+                "freshnessSignals": d.get("freshnessSignals", [])[:3],
+                "staleSignals": d.get("staleSignals", [])[:3],
+                "conflictSignals": d.get("conflictSignals", [])[:3],
             }
         )
 
@@ -75,9 +75,9 @@ def _source_pack(ctx: Dict[str, Any]) -> str:
         {
             "companyResolution": {
                 "resolved": company_resolution.get("resolved"),
-                "sourceDomains": company_resolution.get("sourceDomains", [])[:10],
-                "topTitles": company_resolution.get("topTitles", [])[:8],
-                "snippets": company_resolution.get("snippets", [])[:8],
+                "sourceDomains": company_resolution.get("sourceDomains", [])[:8],
+                "topTitles": company_resolution.get("topTitles", [])[:5],
+                "snippets": company_resolution.get("snippets", [])[:5],
             },
             "candidateScores": candidates,
             "discoveries": compact_discoveries,
@@ -93,7 +93,7 @@ Interview context:
 - Company: {ctx['company']}
 - Role: {ctx['role']}
 - Interview date: {ctx.get('date') or 'not provided'}
-- Job description: {(ctx.get('jdText') or 'not provided')[:5000]}
+- Job description: {(ctx.get('jdText') or 'not provided')[:3000]}
 
 Evidence pack from live public search and deterministic scoring:
 {_source_pack(ctx)}
@@ -103,6 +103,8 @@ Rules:
 - Use deterministic candidate badges exactly for match/freshness wording.
 - Separate identity match confidence from current-role freshness.
 - Do not assert a current title if currentRoleStatus is unknown/stale/conflicting.
+- Do not list certifications, employers, current roles, or biographical facts unless they appear in the supplied titles/snippets or job description.
+- When evidence is strong but source freshness is unclear, keep the useful advice but soften the phrasing: "public results suggest", "signals point to", "prepare for".
 - Write practical interview-prep advice the candidate can actually use.
 - Avoid creepy/surveillance language.
 
@@ -191,7 +193,7 @@ async def synthesize(ctx: Dict[str, Any], mode: str) -> Dict[str, Any]:
 
 
 async def _call_openai(key: str, model: str, system: str, prompt: str, mode: str) -> str:
-    max_tokens = 900 if mode == "free_scan" else 2600
+    max_tokens = 700 if mode == "free_scan" else 2100
     payload = {
         "model": model,
         "messages": [
@@ -214,7 +216,7 @@ async def _call_openai(key: str, model: str, system: str, prompt: str, mode: str
 
 
 async def _call_anthropic(key: str, model: str, system: str, prompt: str, mode: str) -> str:
-    max_tokens = 900 if mode == "free_scan" else 2600
+    max_tokens = 700 if mode == "free_scan" else 2100
     payload = {
         "model": model,
         "max_tokens": max_tokens,

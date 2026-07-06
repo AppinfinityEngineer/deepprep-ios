@@ -55,9 +55,17 @@ async def _run_pipeline(
 ) -> Tuple[SearchProvider, List[PersonCandidate], List[InterviewerIn], Dict, List[Dict]]:
     provider = SearchProvider()
     is_free = mode == "free_scan"
-    company_max = 1 if is_free else 4
-    company_results = 2 if is_free else 4
-    search_depth = "basic" if is_free else "advanced"
+    hydrated = hydrate_interviewer_evidence(interviewers, profile_url, profile_text, limit=limit)
+    interviewer_count = max(1, len(hydrated))
+
+    # Cost/latency budget:
+    # - Free scan: 1 company query + 2 person queries, basic depth.
+    # - Full report: focused paid-quality search, not exhaustive background research.
+    #   Keep a one-interviewer report around 6 live queries and use basic depth first;
+    #   the LLM is good at synthesis, Tavily is the dominant cost/latency driver.
+    company_max = 1 if is_free else 2
+    company_results = 2 if is_free else 3
+    search_depth = "basic"
     company_resolution = await company_resolver.resolve_company(
         company,
         provider,
@@ -66,11 +74,10 @@ async def _run_pipeline(
         max_results_per_query=company_results,
         search_depth=search_depth,
     )
-    hydrated = hydrate_interviewer_evidence(interviewers, profile_url, profile_text, limit=limit)
     candidates: List[PersonCandidate] = []
     discoveries: List[Dict] = []
-    person_query_max = 2 if is_free else 8
-    results_per_query = 2 if is_free else 4
+    person_query_max = 2 if is_free else (4 if interviewer_count == 1 else 3)
+    results_per_query = 2 if is_free else 3
     for iv in hydrated:
         discovery = await person_discovery.discover(
             iv,
@@ -147,7 +154,7 @@ def _source_notes(company_resolution: Dict, discoveries: List[Dict], profile_use
         SourceNote(
             label="Live public web search",
             detail=(
-                f"Reviewed a focused preview set across {len(domains)} public source domain(s). "
+                f"Reviewed a focused source set across {len(domains)} public source domain(s). "
                 f"Strongest signals: {', '.join(clean_domains[:4]) or 'limited public source signal'}."
             ),
         )

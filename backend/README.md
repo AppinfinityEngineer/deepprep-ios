@@ -203,3 +203,7 @@ Real LLM validation focus:
 - People-related claims must remain cautious and evidence-bounded.
 - Current titles must not be asserted when freshness is stale/unclear/conflicting.
 - Cost object should show provider/model and real token estimate.
+
+### Branch 5 full-report cost/speed hotfix
+
+Full paid-report generation now uses a focused live-search budget: roughly 2 company queries plus 3-4 person queries per interviewer at basic search depth. This keeps reports useful while reducing Tavily spend and latency. The LLM prompt also softens people-related claims unless titles/snippets explicitly support them.
