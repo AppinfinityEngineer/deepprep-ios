@@ -25,8 +25,8 @@ class Settings:
 
         # LLM provider selection.
         self.llm_provider: str = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
-        self.openai_model: str = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
-        self.anthropic_model: str = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+        self.openai_model: str = os.environ.get("OPENAI_MODEL") or os.environ.get("LLM_MODEL") or "gpt-4.1-mini"
+        self.anthropic_model: str = os.environ.get("ANTHROPIC_MODEL") or os.environ.get("LLM_MODEL") or "claude-sonnet-5"
 
         # Provider keys. Do not depend on platform-specific/shared keys.
         self.openai_api_key: str = os.environ.get("OPENAI_API_KEY", "").strip()

@@ -164,3 +164,42 @@ Expected free-scan behavior:
 - Shows a display confidence that is capped when current-role freshness is stale/unclear.
 - Filters noisy sources such as YouTube/Wikipedia from prominent source notes.
 ```
+
+## Branch 5 real LLM synthesis validation
+
+Goal: replace mock report wording with real OpenAI/Anthropic structured synthesis while keeping live Tavily search and deterministic confidence/freshness guardrails.
+
+Render development env for live validation:
+
+```env
+APP_ENV=development
+ENABLE_MOCK_SEARCH=false
+ENABLE_MOCK_LLM=false
+TAVILY_API_KEY=<set in Render>
+LLM_PROVIDER=openai
+OPENAI_MODEL=gpt-4.1-mini
+OPENAI_API_KEY=<set in Render>
+ALLOW_DEV_MOCK_UNLOCK=true
+```
+
+Before any free-scan/onboarding test, reset dev scan state:
+
+```powershell
+curl.exe -i -X POST "https://deepprep-ios-dev.onrender.com/api/dev/reset-all-free-scans" `
+  -H "Content-Type: application/json" `
+  -d "{}"
+```
+
+Health proof after deploy:
+
+```powershell
+curl.exe https://deepprep-ios-dev.onrender.com/api/health
+```
+
+Expected: `live_search_ready: true`, `live_llm_ready: true`, `mock_llm: false`.
+
+Real LLM validation focus:
+- Full reports should populate company brief, dossiers, likely questions, talking points and day-of brief.
+- People-related claims must remain cautious and evidence-bounded.
+- Current titles must not be asserted when freshness is stale/unclear/conflicting.
+- Cost object should show provider/model and real token estimate.
