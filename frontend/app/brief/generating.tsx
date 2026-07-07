@@ -119,8 +119,9 @@ export default function Generating() {
     <SafeAreaView style={styles.screen} testID="generating-screen">
       <View style={styles.top}>
         <RadarMark size={64} />
-        <Text style={styles.title}>Building your full brief</Text>
+        <Text style={styles.title}>Building your full interview brief</Text>
         <Text style={styles.sub}>{draft.company} · {draft.role}</Text>
+        <Text style={styles.waitNote}>Most reports finish in 20–40 seconds. DeepPrep is checking public signals and building your interview plan.</Text>
       </View>
 
       {error ? (
@@ -159,4 +160,5 @@ const styles = StyleSheet.create({
   errorBox: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 16, padding: spacing.xl },
   errorTitle: { color: colors.textPrimary, fontSize: font.h3, fontWeight: font.bold, marginBottom: spacing.sm },
   errorText: { color: colors.textSecondary, fontSize: font.body, lineHeight: 22 },
+  waitNote: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18, textAlign: "center", marginTop: spacing.lg },
 });
