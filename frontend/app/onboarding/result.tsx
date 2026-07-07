@@ -65,21 +65,32 @@ export default function ResultScreen() {
         {s.freshnessNote ? <Text style={styles.noteText}>{s.freshnessNote}</Text> : null}
       </Card>
 
-      <SectionTitle style={{ marginTop: spacing.xl }}>3 Key Insights</SectionTitle>
+      <SectionTitle style={{ marginTop: spacing.xl }}>What DeepPrep Found</SectionTitle>
       <Card>
         {s.keyInsights.map((k, i) => (
           <Bullet key={i} text={k} tone="accent" />
         ))}
+        {s.recommendedAction ? <Bullet text={s.recommendedAction} tone="accent" /> : null}
       </Card>
 
-      <SectionTitle style={{ marginTop: spacing.xl }}>1 Likely Question</SectionTitle>
+      <SectionTitle style={{ marginTop: spacing.xl }}>Question You Should Prepare For</SectionTitle>
       <Card>
+        <Text style={styles.valueLabel}>Likely interview question</Text>
         <Text style={styles.body}>{s.likelyQuestion}</Text>
       </Card>
 
-      <SectionTitle style={{ marginTop: spacing.xl }}>1 Talking Point</SectionTitle>
+      <SectionTitle style={{ marginTop: spacing.xl }}>Strong Talking Point</SectionTitle>
       <Card>
+        <Text style={styles.valueLabel}>Use this to sound prepared</Text>
         <Text style={styles.body}>{s.talkingPoint}</Text>
+      </Card>
+
+      <SectionTitle style={{ marginTop: spacing.xl }}>Full Report Unlocks</SectionTitle>
+      <Card>
+        <Bullet text="Complete company brief with risks, signals and opportunities" tone="accent" />
+        <Bullet text="Full interviewer dossier with likely priorities and interview style" tone="accent" />
+        <Bullet text="5+ tailored questions with STAR answer angles" tone="accent" />
+        <Bullet text="Day-of brief you can read minutes before the interview" tone="accent" />
       </Card>
 
       {freeScanReport.sourceNotes?.length ? (
@@ -105,8 +116,8 @@ export default function ResultScreen() {
 
       <View style={styles.lockNote}>
         <Text style={styles.lockText}>
-          This is a limited preview. The full report includes complete interviewer dossiers, company
-          intelligence, all likely questions, and your day-of brief.
+          Your scan found live signals and one useful prep angle. Unlock the full report to turn this into
+          a complete interview plan with questions, dossiers, STAR angles and a day-of brief.
         </Text>
       </View>
 
@@ -132,6 +143,7 @@ const styles = StyleSheet.create({
   evidenceBox: { backgroundColor: colors.surfaceRaised, borderRadius: radius.md, padding: spacing.md, marginTop: spacing.md, gap: spacing.sm },
   evidenceText: { color: colors.textSecondary, fontSize: font.small, lineHeight: 20 },
   noteText: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18, marginTop: spacing.md },
+  valueLabel: { color: colors.accent, fontSize: font.tiny, fontWeight: font.bold, letterSpacing: 0.5, marginBottom: spacing.sm },
   body: { color: colors.textPrimary, fontSize: font.body, lineHeight: 23 },
   sourceRow: { marginBottom: spacing.md },
   sourceLabel: { color: colors.textPrimary, fontSize: font.tiny, fontWeight: font.bold, marginBottom: 4 },
