@@ -13,13 +13,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.thoughtsnaplabs.deepprep",
       "infoPlist": {
-        "UIBackgroundModes": [],
-        "ITSAppUsesNonExemptEncryption": false
+        "UIBackgroundModes": []
       },
-      "buildNumber": "2",
-      "config": {
-        "usesNonExemptEncryption": false
-      }
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.thoughtsnaplabs.deepprep",

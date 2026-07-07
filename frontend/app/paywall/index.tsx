@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, ScrollView, Pressable, Linking } from "react-native";
+import { Text, View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,7 +17,6 @@ const FEATURES = [
   "Company intelligence & likely questions",
   "Saved / offline reports",
   "6 Intel Credits every week",
-  "Free Intel Scan before subscribing",
 ];
 
 export default function Paywall() {
@@ -77,8 +76,8 @@ export default function Paywall() {
     <SafeAreaView style={styles.screen} edges={["top", "bottom"]} testID="paywall-screen">
       {/* NOTE: Hard paywall — intentionally NO close / X button. */}
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <Text style={styles.kicker}>DEEPPREP PRO</Text>
-        <Text style={styles.title}>Unlock your full interview intel.</Text>
+        <Text style={styles.kicker}>UNLOCK FULL INTEL</Text>
+        <Text style={styles.title}>Get the edge. Every interview.</Text>
 
         <View style={styles.features}>
           {FEATURES.map((f) => (
@@ -93,13 +92,13 @@ export default function Paywall() {
           <View style={styles.priceRow}>
             <Text style={styles.price}>{product?.priceLabel || StoreKitService.pricing.introPrice}</Text>
             <View style={styles.introTag}>
-              <Text style={styles.introTagText}>PRO WEEKLY</Text>
+              <Text style={styles.introTagText}>FIRST 3 DAYS</Text>
             </View>
           </View>
           <Text style={styles.priceSub}>
             {product?.recurringLabel || `Then ${StoreKitService.pricing.recurringPrice} / ${StoreKitService.pricing.recurringPeriod}`} · Cancel anytime
           </Text>
-          <Text style={styles.creditNote}>Includes 6 Intel Credits every week while subscribed.</Text>
+          <Text style={styles.creditNote}>Includes 1 Intel Credit now, then 6 Intel Credits every week.</Text>
         </View>
       </ScrollView>
 
@@ -109,16 +108,10 @@ export default function Paywall() {
             {msg}
           </Text>
         ) : null}
-        <Button label="Start DeepPrep Pro" variant="red" loading={loading} onPress={onContinue} haptic="none" testID="paywall-continue" />
+        <Button label="Continue to Full Report" variant="red" loading={loading} onPress={onContinue} haptic="none" testID="paywall-continue" />
         <Pressable onPress={onRestore} style={styles.restore} testID="restore-purchases">
           <Text style={styles.restoreText}>{restoring ? "Restoring…" : "Restore Purchases"}</Text>
         </Pressable>
-        <Text style={styles.legal}>
-          Subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Payment is charged to your Apple ID.
-
-          <Text style={styles.link} onPress={() => Linking.openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")}>Terms of Use</Text>{" · "}
-          <Text style={styles.link} onPress={() => Linking.openURL("https://thoughtsnaplabs.com/deepprep/privacy")}>Privacy Policy</Text>
-        </Text>
         <Text style={styles.legal}>
           By continuing, you agree to our{" "}
           <Text style={styles.link} onPress={() => router.push("/legal/terms")}>

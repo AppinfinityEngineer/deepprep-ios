@@ -65,19 +65,19 @@ export default function ResultScreen() {
         {s.freshnessNote ? <Text style={styles.noteText}>{s.freshnessNote}</Text> : null}
       </Card>
 
-      <SectionTitle style={{ marginTop: spacing.xl }}>Free Scan Preview</SectionTitle>
+      <SectionTitle style={{ marginTop: spacing.xl }}>3 Key Insights</SectionTitle>
       <Card>
         {s.keyInsights.map((k, i) => (
           <Bullet key={i} text={k} tone="accent" />
         ))}
       </Card>
 
-      <SectionTitle style={{ marginTop: spacing.xl }}>Likely Question Preview</SectionTitle>
+      <SectionTitle style={{ marginTop: spacing.xl }}>1 Likely Question</SectionTitle>
       <Card>
         <Text style={styles.body}>{s.likelyQuestion}</Text>
       </Card>
 
-      <SectionTitle style={{ marginTop: spacing.xl }}>Talking Point Preview</SectionTitle>
+      <SectionTitle style={{ marginTop: spacing.xl }}>1 Talking Point</SectionTitle>
       <Card>
         <Text style={styles.body}>{s.talkingPoint}</Text>
       </Card>
@@ -105,7 +105,8 @@ export default function ResultScreen() {
 
       <View style={styles.lockNote}>
         <Text style={styles.lockText}>
-          Your free scan includes real company and interviewer signals. The full report unlocks the complete company brief, interviewer dossier, STAR answer angles, likely questions, tailored talking points, and day-of brief.
+          This is a limited preview. The full report includes complete interviewer dossiers, company
+          intelligence, all likely questions, and your day-of brief.
         </Text>
       </View>
 
