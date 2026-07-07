@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { colors, spacing, font, radius } from "@/src/theme";
 import { ScreenContainer, Button, Card, Badge, SectionTitle, Bullet } from "@/src/components/ui";
 import { ConfidenceMeter } from "@/src/components/ConfidenceMeter";
+import { InterviewerAvatar } from "@/src/components/InterviewerAvatar";
 import { useApp } from "@/src/state/AppContext";
 
 function toneForStatus(status: string) {
@@ -17,7 +18,7 @@ function toneForStatus(status: string) {
 
 export default function ResultScreen() {
   const router = useRouter();
-  const { freeScanReport } = useApp();
+  const { freeScanReport, draft } = useApp();
   const s = freeScanReport?.freeScanSummary;
 
   if (!freeScanReport || !s) {
@@ -31,6 +32,7 @@ export default function ResultScreen() {
   }
 
   const freshTone = s.roleFreshness === "High" ? "success" : s.roleFreshness === "Low" ? "warning" : "warning";
+  const primaryInterviewer = draft.interviewers.find((i) => i.name.trim()) || null;
 
   return (
     <ScreenContainer scroll testID="result-screen">
@@ -43,6 +45,21 @@ export default function ResultScreen() {
         </View>
         <Badge label="SCAN COMPLETE" tone="success" testID="scan-complete-badge" />
       </View>
+
+
+      {primaryInterviewer ? (
+        <Card style={styles.scanInterviewerCard}>
+          <View style={styles.scanInterviewerRow}>
+            <InterviewerAvatar person={primaryInterviewer} size={64} label="Open possible interviewer image" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.scanEyebrow}>Possible interviewer found</Text>
+              <Text style={styles.scanName}>{primaryInterviewer.name}</Text>
+              {primaryInterviewer.title ? <Text style={styles.scanTitle}>{primaryInterviewer.title}</Text> : null}
+              <Text style={styles.scanHint}>Tap the circle to enlarge. If a public image is available, DeepPrep will show it; otherwise we use a safe initials placeholder.</Text>
+            </View>
+          </View>
+        </Card>
+      ) : null}
 
       <Card style={{ marginTop: spacing.lg }}>
         <ConfidenceMeter label="Match Confidence" percent={s.matchConfidence} tone="success" />
@@ -137,6 +154,12 @@ const styles = StyleSheet.create({
   head: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   title: { color: colors.textPrimary, fontSize: font.h2, fontWeight: font.bold, letterSpacing: -0.3 },
   company: { color: colors.textSecondary, fontSize: font.small, marginTop: 4 },
+  scanInterviewerCard: { marginTop: spacing.lg },
+  scanInterviewerRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  scanEyebrow: { color: colors.accent, fontSize: font.tiny, fontWeight: font.bold, letterSpacing: 0.6, textTransform: "uppercase" },
+  scanName: { color: colors.textPrimary, fontSize: font.body, fontWeight: font.bold, marginTop: 3 },
+  scanTitle: { color: colors.textSecondary, fontSize: font.small, marginTop: 2 },
+  scanHint: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 17, marginTop: spacing.sm },
   sub: { color: colors.textSecondary, fontSize: font.body, marginTop: spacing.sm },
   freshRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: spacing.md, gap: spacing.md },
   freshLabel: { color: colors.textSecondary, fontSize: font.small, flex: 1 },

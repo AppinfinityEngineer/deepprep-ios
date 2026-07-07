@@ -8,6 +8,7 @@ import { colors, spacing, font } from "@/src/theme";
 import { Card, Badge, Bullet, SectionTitle } from "@/src/components/ui";
 import { InterviewerDossier, Report } from "@/src/models/types";
 import { DeepPrepApi } from "@/src/api/deepprep";
+import { InterviewerAvatar } from "@/src/components/InterviewerAvatar";
 
 function toneFor(v: string): "success" | "warning" | "danger" | "neutral" {
   const s = v.toLowerCase();
@@ -51,7 +52,7 @@ export default function DossierScreen() {
       ) : (
         <ScrollView contentContainerStyle={{ padding: spacing.xl, paddingBottom: spacing.xxxl }} showsVerticalScrollIndicator={false}>
           <View style={styles.profile}>
-            <View style={styles.avatar}><Feather name="user" size={26} color={colors.textSecondary} /></View>
+            <InterviewerAvatar person={dossier} size={64} label={`Open ${dossier.name} image`} />
             <View style={{ flex: 1 }}>
               <Text style={styles.name}>{dossier.name}</Text>
               {dossier.title ? <Text style={styles.title}>{dossier.title}</Text> : null}

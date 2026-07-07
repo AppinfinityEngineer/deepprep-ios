@@ -11,6 +11,7 @@ import { Report } from "@/src/models/types";
 import { DeepPrepApi } from "@/src/api/deepprep";
 import { ReviewService } from "@/src/review/ReviewService";
 import { HapticsService } from "@/src/haptics/HapticsService";
+import { InterviewerAvatar } from "@/src/components/InterviewerAvatar";
 
 const TABS = ["Overview", "Dossiers", "Questions", "Day-of"] as const;
 type Tab = (typeof TABS)[number];
@@ -139,7 +140,7 @@ function Dossiers({ report, onOpen }: { report: Report; onOpen: (i: number) => v
       {report.dossiers.map((d, i) => (
         <Card key={i} style={styles.dossierCard} onPress={() => onOpen(i)} testID={`dossier-card-${i}`}>
           <View style={styles.dossierHead}>
-            <View style={styles.avatar}><Feather name="user" size={20} color={colors.textSecondary} /></View>
+            <InterviewerAvatar person={d} size={44} label={`Open ${d.name} image`} />
             <View style={{ flex: 1 }}>
               <Text style={styles.dName}>{d.name}</Text>
               {d.title ? <Text style={styles.dTitle}>{d.title}</Text> : null}

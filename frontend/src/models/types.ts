@@ -6,6 +6,10 @@ export interface Interviewer {
   title?: string;
   linkedinUrl?: string;
   profileText?: string;
+  profileImageUrl?: string;
+  imageUrl?: string;
+  avatarUrl?: string;
+  photoUrl?: string;
   notes?: string;
 }
 
@@ -33,6 +37,10 @@ export interface InterviewerDossier {
   interviewerId?: string;
   name: string;
   title?: string;
+  profileImageUrl?: string;
+  imageUrl?: string;
+  avatarUrl?: string;
+  photoUrl?: string;
   matchConfidence: string;
   roleFreshness: string;
   currentRoleStatus: string;
