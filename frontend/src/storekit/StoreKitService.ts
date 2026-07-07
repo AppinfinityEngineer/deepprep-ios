@@ -18,10 +18,10 @@ export const PRODUCT_ID = process.env.EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID || "de
 export const ENTITLEMENT_ID = "deepprep_pro";
 
 export const PRICING = {
-  introPrice: "£1.99",
-  introPeriod: "first 3 days",
   recurringPrice: "£7.99",
   recurringPeriod: "week",
+  displayPrice: "£7.99/week",
+  displayLine: "£7.99/week · Cancel anytime",
 };
 
 export interface DeepPrepProduct {
@@ -113,23 +113,25 @@ export function isRealIapAvailable(): boolean {
 function fallbackProduct(): DeepPrepProduct {
   return {
     productId: PRODUCT_ID,
-    title: "DeepPrep Pro Weekly",
-    priceLabel: `${PRICING.introPrice} ${PRICING.introPeriod}`,
-    introLabel: `${PRICING.introPrice} for ${PRICING.introPeriod}`,
-    recurringLabel: `then ${PRICING.recurringPrice} / ${PRICING.recurringPeriod}`,
-    description: "1 Intel Credit today, then 6 Intel Credits every week.",
+    title: "DeepPrep Pro",
+    priceLabel: PRICING.displayPrice,
+    introLabel: "",
+    recurringLabel: PRICING.displayLine,
+    description: "6 Intel Credits every week.",
   };
 }
 
 function mergeStoreProduct(store?: StoreProduct): DeepPrepProduct {
   const fallback = fallbackProduct();
   if (!store) return fallback;
-  const price = store.localizedPrice || store.displayPrice || store.price || fallback.priceLabel;
+  const rawPrice = store.localizedPrice || store.displayPrice || store.price;
+  const price = rawPrice ? `${rawPrice}/week` : fallback.priceLabel;
   return {
     ...fallback,
-    title: store.title || fallback.title,
+    title: "DeepPrep Pro",
     priceLabel: price,
-    recurringLabel: `${price} / ${PRICING.recurringPeriod} after intro`,
+    introLabel: "",
+    recurringLabel: `${price} · Cancel anytime`,
     description: store.description || fallback.description,
   };
 }
@@ -207,6 +209,10 @@ async function syncPurchase(deviceId: string, purchase: IapPurchase, source: "pu
   return entitlement;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function devMockSync(deviceId: string): Promise<Entitlement> {
   if (!DEV_MOCK_UNLOCK) throw new Error("Native StoreKit is not available in this build. Use an iOS dev-client/TestFlight build or enable dev mock unlock for Expo Go testing.");
   return DeepPrepApi.entitlementSync(deviceId, { productId: PRODUCT_ID, devMockUnlock: true });
@@ -231,12 +237,32 @@ export async function purchase(deviceId: string): Promise<PurchaseResult> {
     if (!result && iap.requestSubscription) {
       result = await iap.requestSubscription({ sku: PRODUCT_ID, request: { ios: { sku: PRODUCT_ID }, android: { skus: [PRODUCT_ID] } }, type: "subs" });
     }
+
     const purchaseResult = purchaseCandidatesFromResult(result).find((candidate) => candidate.productId === PRODUCT_ID);
     if (purchaseResult) {
       const entitlement = await syncPurchase(deviceId, purchaseResult, "purchase");
       return { success: true, entitlement, simulated: false };
     }
-    return { success: true, simulated: false, pending: true };
+
+    // TestFlight can show Apple success before the purchase object reaches JS.
+    // Briefly poll available purchases and backend entitlement before showing recovery copy.
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await sleep(1200);
+      try {
+        const purchases = await iap.getAvailablePurchases?.();
+        const active = purchases?.find((candidate) => candidate.productId === PRODUCT_ID);
+        if (active) {
+          const entitlement = await syncPurchase(deviceId, active, "restore");
+          return { success: entitlement.active, entitlement, simulated: false };
+        }
+      } catch {}
+      try {
+        const entitlement = await DeepPrepApi.getEntitlement(deviceId);
+        if (entitlement.active) return { success: true, entitlement, simulated: false };
+      } catch {}
+    }
+
+    return { success: true, simulated: false, pending: true, error: "Apple may still be finishing the purchase. Tap Restore Purchases in a moment if your report does not unlock automatically." };
   } catch (error) { return { success: false, simulated: false, error: String(error) }; }
 }
 

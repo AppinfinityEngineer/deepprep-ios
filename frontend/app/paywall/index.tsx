@@ -13,9 +13,7 @@ import { HapticsService } from "@/src/haptics/HapticsService";
 const FEATURES = [
   "Full reports & interviewer dossiers",
   "Day-of brief & smart talking points",
-  "Freshness monitoring & alerts",
   "Company intelligence & likely questions",
-  "Saved / offline reports",
   "6 Intel Credits every week",
 ];
 
@@ -45,7 +43,7 @@ export default function Paywall() {
       if (ent.active) {
         router.replace("/brief/generating?from=onboarding");
       } else {
-        setMsg("Purchase is pending or could not be completed. If Apple shows success, your report will unlock automatically.");
+        setMsg("Apple may still be finishing the purchase. Tap Restore Purchases in a moment if your report does not unlock automatically.");
       }
     } catch {
       setMsg("Something went wrong. Please try again.");
@@ -89,16 +87,10 @@ export default function Paywall() {
         </View>
 
         <View style={styles.priceCard}>
-          <View style={styles.priceRow}>
-            <Text style={styles.price}>{product?.priceLabel || StoreKitService.pricing.introPrice}</Text>
-            <View style={styles.introTag}>
-              <Text style={styles.introTagText}>FIRST 3 DAYS</Text>
-            </View>
-          </View>
-          <Text style={styles.priceSub}>
-            {product?.recurringLabel || `Then ${StoreKitService.pricing.recurringPrice} / ${StoreKitService.pricing.recurringPeriod}`} · Cancel anytime
-          </Text>
-          <Text style={styles.creditNote}>Includes 1 Intel Credit now, then 6 Intel Credits every week.</Text>
+          <Text style={styles.planName}>DeepPrep Pro</Text>
+          <Text style={styles.price}>{product?.recurringLabel || StoreKitService.pricing.displayLine}</Text>
+          <Text style={styles.creditNote}>Includes 6 Intel Credits every week.</Text>
+          <Text style={styles.priceSub}>Subscription renews automatically. Cancel anytime in your Apple account settings.</Text>
         </View>
       </ScrollView>
 
@@ -137,14 +129,12 @@ const styles = StyleSheet.create({
   featRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   featText: { color: colors.textPrimary, fontSize: font.body, flex: 1 },
   priceCard: { marginTop: spacing.xxl, backgroundColor: colors.background, borderColor: colors.border, borderWidth: 1, borderRadius: radius.md, padding: spacing.xl },
-  priceRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  price: { color: colors.textPrimary, fontSize: 40, fontWeight: font.bold, letterSpacing: -1 },
-  introTag: { backgroundColor: colors.accent, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 4 },
-  introTagText: { color: colors.white, fontSize: font.tiny, fontWeight: font.bold, letterSpacing: 0.5 },
-  priceSub: { color: colors.textSecondary, fontSize: font.small, marginTop: spacing.sm },
-  creditNote: { color: colors.textMuted, fontSize: font.tiny, marginTop: spacing.sm },
+  planName: { color: colors.accent, fontSize: font.small, fontWeight: font.bold, letterSpacing: 1 },
+  price: { color: colors.textPrimary, fontSize: 34, fontWeight: font.bold, letterSpacing: -0.5, marginTop: spacing.sm },
+  priceSub: { color: colors.textSecondary, fontSize: font.tiny, marginTop: spacing.sm, lineHeight: 18 },
+  creditNote: { color: colors.textPrimary, fontSize: font.small, marginTop: spacing.sm, fontWeight: font.medium },
   footer: { padding: spacing.xl, borderTopWidth: 1, borderTopColor: colors.border },
-  msg: { color: colors.danger, fontSize: font.small, textAlign: "center", marginBottom: spacing.md },
+  msg: { color: colors.textSecondary, fontSize: font.small, textAlign: "center", marginBottom: spacing.md, lineHeight: 18 },
   restore: { alignItems: "center", paddingVertical: spacing.md },
   restoreText: { color: colors.textSecondary, fontSize: font.small, fontWeight: font.medium },
   legal: { color: colors.textMuted, fontSize: font.tiny, textAlign: "center", lineHeight: 18 },

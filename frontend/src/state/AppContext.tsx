@@ -69,10 +69,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setDeviceId(id);
       setOnboardingDone(await Repository.isOnboardingDone());
       setFreeScanUsed(await Repository.isFreeScanUsed());
-      await refreshEntitlement(id);
-      await refreshReports(id);
       stopStoreKitListener = StoreKitService.listenForPurchaseUpdates(id, (ent) => setEntitlement(ent));
       setReady(true);
+      void refreshEntitlement(id);
+      void refreshReports(id);
     })();
     return () => stopStoreKitListener();
     // eslint-disable-next-line react-hooks/exhaustive-deps
