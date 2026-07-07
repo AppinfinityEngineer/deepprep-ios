@@ -8,6 +8,7 @@ import { colors, spacing, font } from "@/src/theme";
 import { Card, Badge, Bullet, SectionTitle } from "@/src/components/ui";
 import { InterviewerDossier, Report } from "@/src/models/types";
 import { DeepPrepApi } from "@/src/api/deepprep";
+import { useApp } from "@/src/state/AppContext";
 import { InterviewerAvatar } from "@/src/components/InterviewerAvatar";
 
 function toneFor(v: string): "success" | "warning" | "danger" | "neutral" {
@@ -21,19 +22,21 @@ function toneFor(v: string): "success" | "warning" | "danger" | "neutral" {
 export default function DossierScreen() {
   const { id, index } = useLocalSearchParams<{ id: string; index: string }>();
   const router = useRouter();
+  const { deviceId } = useApp();
   const [dossier, setDossier] = useState<InterviewerDossier | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const r: Report = await DeepPrepApi.getReport(String(id));
+        if (!deviceId) return;
+        const r: Report = await DeepPrepApi.getReport(String(id), deviceId);
         setDossier(r.dossiers[Number(index) || 0] ?? null);
       } finally {
         setLoading(false);
       }
     })();
-  }, [id, index]);
+  }, [id, index, deviceId]);
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]} testID="dossier-screen">

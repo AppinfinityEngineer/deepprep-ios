@@ -11,6 +11,7 @@ import { Report } from "@/src/models/types";
 import { DeepPrepApi } from "@/src/api/deepprep";
 import { ReviewService } from "@/src/review/ReviewService";
 import { HapticsService } from "@/src/haptics/HapticsService";
+import { useApp } from "@/src/state/AppContext";
 import { InterviewerAvatar } from "@/src/components/InterviewerAvatar";
 
 const TABS = ["Overview", "Dossiers", "Questions", "Day-of"] as const;
@@ -27,6 +28,7 @@ function toneFor(v: string): "success" | "warning" | "danger" | "neutral" {
 export default function ReportScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { deviceId } = useApp();
   const [report, setReport] = useState<Report | null>(null);
   const [tab, setTab] = useState<Tab>("Overview");
   const [copied, setCopied] = useState(false);
@@ -35,7 +37,8 @@ export default function ReportScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await DeepPrepApi.getReport(String(id));
+        if (!deviceId) return;
+        const r = await DeepPrepApi.getReport(String(id), deviceId);
         setReport(r);
       } catch {
         await ReviewService.record("api_error");
@@ -43,7 +46,7 @@ export default function ReportScreen() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, deviceId]);
 
   const copyDayOf = async () => {
     if (!report) return;

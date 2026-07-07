@@ -7,6 +7,11 @@ function clean(v?: string) {
   return t ? t : undefined;
 }
 
+function withDevice(path: string, deviceId: string) {
+  const joiner = path.includes("?") ? "&" : "?";
+  return `${path}${joiner}deviceId=${encodeURIComponent(deviceId)}`;
+}
+
 function interviewersPayload(d: InterviewDraft) {
   const interviewers = d.interviewers
     .filter((i) => i.name.trim())
@@ -17,9 +22,6 @@ function interviewersPayload(d: InterviewDraft) {
       profileText: clean(i.profileText),
     }));
 
-  // V1 UX collects global profile evidence on the onboarding/new-brief step.
-  // Treat it as applying to the primary interviewer unless that interviewer
-  // already has its own evidence. Backend repeats this hydration server-side.
   if (interviewers.length > 0) {
     if (clean(d.profileUrl) && !interviewers[0].linkedinUrl) {
       interviewers[0].linkedinUrl = clean(d.profileUrl);
@@ -44,6 +46,17 @@ function interviewPayload(deviceId: string, d: InterviewDraft) {
   };
 }
 
+export type ReportJobStart = { interviewId: string; status: "generating"; creditsRemaining: number };
+export type ReportJobStatus = {
+  interviewId: string;
+  status: "draft" | "free_scan" | "generating" | "ready" | "failed";
+  reportId?: string | null;
+  report?: Report | null;
+  errorReason?: string | null;
+  errorMessage?: string | null;
+  updatedAt?: string | null;
+};
+
 export const DeepPrepApi = {
   health: () => http.get<{ status: string }>("/health"),
 
@@ -61,16 +74,22 @@ export const DeepPrepApi = {
   createReport: (deviceId: string, d: InterviewDraft) =>
     http.post<{ report: Report; creditsRemaining: number }>("/reports", interviewPayload(deviceId, d)),
 
-  listReports: (deviceId: string) => http.get<Report[]>(`/reports?deviceId=${deviceId}`),
-  getReport: (id: string) => http.get<Report>(`/reports/${id}`),
+  startReport: (deviceId: string, d: InterviewDraft) =>
+    http.post<ReportJobStart>("/reports/start", interviewPayload(deviceId, d)),
+
+  getReportStatus: (deviceId: string, interviewId: string) =>
+    http.get<ReportJobStatus>(withDevice(`/reports/status/${interviewId}`, deviceId)),
+
+  listReports: (deviceId: string) => http.get<Report[]>(`/reports?deviceId=${encodeURIComponent(deviceId)}`),
+  getReport: (id: string, deviceId: string) => http.get<Report>(withDevice(`/reports/${id}`, deviceId)),
 
   entitlementSync: (deviceId: string, opts: { receipt?: string; productId?: string; devMockUnlock?: boolean }) =>
     http.post<Entitlement>("/entitlement/sync", { deviceId, ...opts }),
 
-  getEntitlement: (deviceId: string) => http.get<Entitlement>(`/entitlement?deviceId=${deviceId}`),
+  getEntitlement: (deviceId: string) => http.get<Entitlement>(`/entitlement?deviceId=${encodeURIComponent(deviceId)}`),
 
   getUsage: (deviceId: string) =>
-    http.get<{ creditsRemaining: number; active: boolean; introUsed: boolean }>(`/usage?deviceId=${deviceId}`),
+    http.get<{ creditsRemaining: number; active: boolean; introUsed: boolean }>(`/usage?deviceId=${encodeURIComponent(deviceId)}`),
 
   privacyDelete: (deviceId: string) => http.post<{ deleted: boolean }>("/privacy/delete", { deviceId }),
 

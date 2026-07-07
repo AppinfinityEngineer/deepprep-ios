@@ -7,7 +7,7 @@ import { RadarMark } from "@/src/components/RadarMark";
 
 export default function Index() {
   const router = useRouter();
-  const { ready, onboardingDone, entitlement } = useApp();
+  const { ready, onboardingDone, entitlement, reports, pendingReportJob } = useApp();
   const fade = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -17,12 +17,32 @@ export default function Index() {
   useEffect(() => {
     if (!ready) return;
     const t = setTimeout(() => {
-      if (entitlement?.active) router.replace("/(tabs)");
-      else if (onboardingDone) router.replace("/paywall");
-      else router.replace("/onboarding");
-    }, 1600);
+      if (pendingReportJob?.interviewId) {
+        router.replace(`/brief/generating?resume=1&interviewId=${pendingReportJob.interviewId}`);
+        return;
+      }
+
+      // Critical: an active TestFlight/App Store subscription must never skip onboarding.
+      // Users still need to create a brief before the app has anything to show.
+      if (!onboardingDone) {
+        router.replace("/onboarding");
+        return;
+      }
+
+      if (reports.length > 0) {
+        router.replace("/(tabs)");
+        return;
+      }
+
+      if (entitlement?.active) {
+        router.replace("/brief/new");
+        return;
+      }
+
+      router.replace("/paywall");
+    }, 1100);
     return () => clearTimeout(t);
-  }, [ready, onboardingDone, entitlement, router]);
+  }, [ready, onboardingDone, entitlement, reports.length, pendingReportJob, router]);
 
   return (
     <View style={styles.container} testID="splash-screen">

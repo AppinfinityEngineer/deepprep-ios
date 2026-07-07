@@ -1,7 +1,7 @@
 // Global app state: device id, entitlement/credits, current interview draft,
-// free scan report, and cached reports list.
+// free scan report, cached reports list, and pending report jobs.
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { Repository } from "../storage/repository";
+import { Repository, PendingReportJob } from "../storage/repository";
 import { DeepPrepApi } from "../api/deepprep";
 import { StoreKitService } from "../storekit/StoreKitService";
 import { Entitlement, InterviewDraft, Report, emptyDraft } from "../models/types";
@@ -15,6 +15,7 @@ interface AppState {
   draft: InterviewDraft;
   freeScanReport: Report | null;
   reports: Report[];
+  pendingReportJob: PendingReportJob | null;
 
   setDraft: (d: Partial<InterviewDraft>) => void;
   resetDraft: () => void;
@@ -25,6 +26,7 @@ interface AppState {
   unlockPro: () => Promise<Entitlement>;
   restorePurchases: () => Promise<Entitlement>;
   refreshReports: () => Promise<void>;
+  setPendingReportJob: (job: PendingReportJob | null) => Promise<void>;
   devResetForTesting: () => Promise<string>;
 }
 
@@ -39,6 +41,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [draft, setDraftState] = useState<InterviewDraft>(emptyDraft());
   const [freeScanReport, setFreeScanReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
+  const [pendingReportJobState, setPendingReportJobState] = useState<PendingReportJob | null>(null);
 
   const refreshEntitlement = useCallback(async (id?: string) => {
     const did = id || deviceId;
@@ -69,6 +72,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setDeviceId(id);
       setOnboardingDone(await Repository.isOnboardingDone());
       setFreeScanUsed(await Repository.isFreeScanUsed());
+      setPendingReportJobState(await Repository.getPendingReportJob());
       stopStoreKitListener = StoreKitService.listenForPurchaseUpdates(id, (ent) => setEntitlement(ent));
       setReady(true);
       void refreshEntitlement(id);
@@ -92,6 +96,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const completeOnboarding = useCallback(async () => {
     await Repository.setOnboardingDone(true);
     setOnboardingDone(true);
+  }, []);
+
+  const setPendingReportJob = useCallback(async (job: PendingReportJob | null) => {
+    await Repository.setPendingReportJob(job);
+    setPendingReportJobState(job);
   }, []);
 
   const unlockPro = useCallback(async () => {
@@ -123,14 +132,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         await DeepPrepApi.devResetFreeScan(oldId);
       } catch {
-        // Backend may not have the dev route deployed yet. Continue local reset.
+        // Continue local reset.
       }
     }
 
     try {
       await DeepPrepApi.devResetAllFreeScans();
     } catch {
-      // Reset-all is development-only and may not be deployed. Fresh local id still unblocks testing.
+      // Development-only endpoint may not be deployed. Fresh id still unblocks local state.
     }
 
     const newId = await Repository.createFreshDevDeviceId();
@@ -140,6 +149,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setEntitlement(null);
     setFreeScanReport(null);
     setReports([]);
+    setPendingReportJobState(null);
     setDraftState(emptyDraft());
     return newId;
   }, [deviceId]);
@@ -155,6 +165,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         draft,
         freeScanReport,
         reports,
+        pendingReportJob: pendingReportJobState,
         setDraft,
         resetDraft,
         setFreeScanReport,
@@ -164,6 +175,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         unlockPro,
         restorePurchases,
         refreshReports,
+        setPendingReportJob,
         devResetForTesting,
       }}
     >

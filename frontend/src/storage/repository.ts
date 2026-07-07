@@ -2,15 +2,23 @@
 // swap the backing store here if needed later.
 import { storage } from "@/src/utils/storage";
 
+export type PendingReportJob = {
+  interviewId: string;
+  company?: string;
+  role?: string;
+  fromOnboarding?: boolean;
+  createdAt: number;
+};
+
 const KEYS = {
   deviceId: "dp_anonymous_device_id",
   onboardingDone: "dp_onboarding_done",
   freeScanUsed: "dp_free_scan_used",
   freeScanReportId: "dp_free_scan_report_id",
+  pendingReportJob: "dp_pending_report_job",
   reviewState: "dp_review_prompt_state",
 } as const;
 
-// Lightweight uuid v4 (anonymous id only — not security-critical crypto).
 function uuid(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -27,13 +35,13 @@ async function clearLocalFlowState() {
   await Promise.all([
     storage.secureRemove(KEYS.freeScanUsed),
     storage.secureRemove(KEYS.freeScanReportId),
+    storage.removeItem(KEYS.pendingReportJob),
     storage.removeItem(KEYS.onboardingDone),
     storage.removeItem(KEYS.reviewState),
   ]);
 }
 
 export const Repository = {
-  // Anonymous device id — Keychain-backed via secureGet/secureSet, survives reinstall on iOS.
   async getDeviceId(): Promise<string> {
     let id = await storage.secureGet<string>(KEYS.deviceId, "");
     if (!id) {
@@ -61,10 +69,27 @@ export const Repository = {
     return (await storage.secureGet<boolean>(KEYS.freeScanUsed, false)) === true;
   },
 
+  async setPendingReportJob(job: PendingReportJob | null) {
+    if (!job) {
+      await storage.removeItem(KEYS.pendingReportJob);
+      return;
+    }
+    await storage.setItem(KEYS.pendingReportJob, JSON.stringify(job));
+  },
+  async getPendingReportJob(): Promise<PendingReportJob | null> {
+    const raw = await storage.getItem<string>(KEYS.pendingReportJob, "");
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as PendingReportJob;
+      return parsed?.interviewId ? parsed : null;
+    } catch {
+      return null;
+    }
+  },
+
   async createFreshDevDeviceId(): Promise<string> {
     const id = freshDevId();
     await clearLocalFlowState();
-    // Do not remove the Keychain id and hope iOS clears it. Overwrite it.
     await storage.secureSet(KEYS.deviceId, id);
     return id;
   },
@@ -73,7 +98,6 @@ export const Repository = {
     return await this.createFreshDevDeviceId();
   },
 
-  // Weighted review state.
   async getReviewState(): Promise<{ score: number; lastPromptAt: number; prompted: boolean }> {
     const raw = await storage.getItem<string>(KEYS.reviewState, "");
     if (!raw) return { score: 0, lastPromptAt: 0, prompted: false };
