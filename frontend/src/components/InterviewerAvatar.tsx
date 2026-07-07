@@ -1,78 +1,77 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import { colors, font, spacing } from "@/src/theme";
 
-type AnyPerson = {
-  name?: string | null;
-  title?: string | null;
-  imageUrl?: string | null;
+type ImageLike = {
   profileImageUrl?: string | null;
+  imageUrl?: string | null;
   avatarUrl?: string | null;
   photoUrl?: string | null;
 };
 
-function clean(v?: string | null): string | undefined {
-  const t = v?.trim();
-  return t ? t : undefined;
+type PersonLike = ImageLike & {
+  name?: string | null;
+};
+
+type Props = ImageLike & {
+  name?: string;
+  person?: PersonLike | null;
+  size?: number;
+  testID?: string;
+  label?: string;
+};
+
+export function resolveInterviewerImageUrl(input?: ImageLike | null): string | undefined {
+  const raw = input?.profileImageUrl || input?.imageUrl || input?.avatarUrl || input?.photoUrl || "";
+  const clean = raw.trim();
+  if (!clean || !/^https?:\/\//i.test(clean)) return undefined;
+  return clean;
 }
 
-export function getPersonImageUrl(person?: AnyPerson | null): string | undefined {
-  return clean(person?.profileImageUrl) || clean(person?.imageUrl) || clean(person?.avatarUrl) || clean(person?.photoUrl);
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] || "?") + (parts[1]?.[0] || "");
 }
 
-function initials(name?: string | null): string {
-  const parts = (name || "?").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
-}
-
-export function InterviewerAvatar({ person, size = 48, label = "Open interviewer image" }: { person?: AnyPerson | null; size?: number; label?: string }) {
+export function InterviewerAvatar({ name, person, size = 48, testID, label, ...imageFields }: Props) {
   const [open, setOpen] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = getPersonImageUrl(person);
-  const showImage = Boolean(imageUrl && !imageFailed);
-  const letters = useMemo(() => initials(person?.name), [person?.name]);
+  const displayName = (name || person?.name || "Interviewer").trim() || "Interviewer";
+  const imageUrl = resolveInterviewerImageUrl(person || imageFields);
   const radius = size / 2;
 
   return (
     <>
       <Pressable
-        accessibilityRole="imagebutton"
-        accessibilityLabel={label}
         onPress={() => setOpen(true)}
+        testID={testID || "interviewer-avatar"}
+        accessibilityRole="imagebutton"
+        accessibilityLabel={label || `Open profile image for ${displayName}`}
         style={[styles.avatar, { width: size, height: size, borderRadius: radius }]}
-        testID="interviewer-avatar"
       >
-        {showImage ? (
-          <Image source={{ uri: imageUrl }} style={[styles.image, { width: size, height: size, borderRadius: radius }]} onError={() => setImageFailed(true)} />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={{ width: size, height: size, borderRadius: radius }} resizeMode="cover" />
         ) : (
-          <View style={[styles.placeholder, { width: size, height: size, borderRadius: radius }]}> 
-            {letters !== "?" ? <Text style={[styles.initials, { fontSize: Math.max(13, size * 0.34) }]}>{letters}</Text> : <Feather name="user" size={Math.max(18, size * 0.45)} color={colors.textSecondary} />}
-          </View>
+          <Text style={[styles.initials, { fontSize: size <= 50 ? font.small : font.h3 }]}>{initials(displayName)}</Text>
         )}
       </Pressable>
 
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+      <Modal visible={open} animationType="fade" transparent onRequestClose={() => setOpen(false)}>
         <View style={styles.modalBackdrop}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
+          <Pressable style={styles.close} onPress={() => setOpen(false)} testID="avatar-modal-close">
+            <Feather name="x" size={22} color={colors.textPrimary} />
+          </Pressable>
           <View style={styles.modalCard}>
-            <Pressable onPress={() => setOpen(false)} hitSlop={12} style={styles.close} testID="interviewer-avatar-close">
-              <Feather name="x" size={22} color={colors.textPrimary} />
-            </Pressable>
-            <View style={styles.largeWrap}>
-              {showImage ? (
-                <Image source={{ uri: imageUrl }} style={styles.largeImage} resizeMode="cover" onError={() => setImageFailed(true)} />
-              ) : (
-                <View style={styles.largePlaceholder}>
-                  {letters !== "?" ? <Text style={styles.largeInitials}>{letters}</Text> : <Feather name="user" size={54} color={colors.textSecondary} />}
-                </View>
-              )}
-            </View>
-            {person?.name ? <Text style={styles.name}>{person.name}</Text> : null}
-            {person?.title ? <Text style={styles.title}>{person.title}</Text> : null}
-            <Text style={styles.note}>{showImage ? "Public profile image preview" : "Profile image unavailable — using safe initials placeholder"}</Text>
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.largeImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.largePlaceholder}>
+                <Text style={styles.largeInitials}>{initials(displayName)}</Text>
+              </View>
+            )}
+            <Text style={styles.modalName}>{displayName}</Text>
+            <Text style={styles.modalHint}>{imageUrl ? "Public profile image preview" : "Image not available yet"}</Text>
           </View>
         </View>
       </Modal>
@@ -80,19 +79,51 @@ export function InterviewerAvatar({ person, size = 48, label = "Open interviewer
   );
 }
 
+export default InterviewerAvatar;
+
 const styles = StyleSheet.create({
-  avatar: { overflow: "hidden", backgroundColor: colors.surfaceRaised, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
-  image: { backgroundColor: colors.surfaceRaised },
-  placeholder: { backgroundColor: colors.surfaceRaised, alignItems: "center", justifyContent: "center" },
-  initials: { color: colors.textPrimary, fontWeight: font.bold, letterSpacing: 0.5 },
-  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.78)", alignItems: "center", justifyContent: "center", padding: spacing.xl },
-  modalCard: { width: "100%", maxWidth: 360, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 24, padding: spacing.xl, alignItems: "center" },
-  close: { position: "absolute", top: spacing.md, right: spacing.md, zIndex: 2, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceRaised, alignItems: "center", justifyContent: "center" },
-  largeWrap: { width: 168, height: 168, borderRadius: 84, overflow: "hidden", borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceRaised, marginTop: spacing.md },
-  largeImage: { width: 168, height: 168 },
-  largePlaceholder: { width: 168, height: 168, borderRadius: 84, backgroundColor: colors.surfaceRaised, alignItems: "center", justifyContent: "center" },
-  largeInitials: { color: colors.textPrimary, fontSize: 54, fontWeight: font.bold, letterSpacing: 1 },
-  name: { color: colors.textPrimary, fontSize: font.h3, fontWeight: font.bold, textAlign: "center", marginTop: spacing.lg },
-  title: { color: colors.textSecondary, fontSize: font.small, textAlign: "center", marginTop: 4 },
-  note: { color: colors.textMuted, fontSize: font.tiny, textAlign: "center", marginTop: spacing.md },
+  avatar: {
+    overflow: "hidden",
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  initials: { color: colors.textPrimary, fontWeight: font.bold },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.86)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: spacing.xl,
+  },
+  close: {
+    position: "absolute",
+    top: 54,
+    right: 24,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCard: { alignItems: "center", gap: spacing.md },
+  largeImage: { width: 220, height: 220, borderRadius: 110, borderWidth: 1, borderColor: colors.border },
+  largePlaceholder: {
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  largeInitials: { color: colors.textPrimary, fontSize: 64, fontWeight: font.bold },
+  modalName: { color: colors.textPrimary, fontSize: font.h3, fontWeight: font.bold, textAlign: "center" },
+  modalHint: { color: colors.textSecondary, fontSize: font.small, textAlign: "center" },
 });

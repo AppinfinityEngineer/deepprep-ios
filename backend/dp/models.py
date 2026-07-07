@@ -34,6 +34,7 @@ class PersonCandidate(BaseModel):
     possibleTitle: Optional[str] = None
     possibleCompany: Optional[str] = None
     possibleLocation: Optional[str] = None
+    profileImageUrl: Optional[str] = None
     profileUrls: List[str] = Field(default_factory=list)
     sourceUrls: List[str] = Field(default_factory=list)
     sourceDomains: List[str] = Field(default_factory=list)
@@ -80,6 +81,7 @@ class InterviewerDossier(BaseModel):
     interviewerId: Optional[str] = None
     name: str
     title: Optional[str] = None
+    profileImageUrl: Optional[str] = None
     matchConfidence: str
     roleFreshness: str
     currentRoleStatus: str

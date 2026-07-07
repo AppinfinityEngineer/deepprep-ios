@@ -9,6 +9,8 @@ LLM synthesis mocked until branch 5. No silent fake search is allowed.
 """
 from __future__ import annotations
 
+import asyncio
+
 from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlparse
 
@@ -46,12 +48,29 @@ class SearchProvider:
         max_results_per_query: int = 4,
         search_depth: str = "advanced",
     ) -> List[SearchResult]:
-        """Run a bounded query pack and return URL-deduped results."""
+        """Run a bounded query pack concurrently and return URL-deduped results.
+
+        Full report latency was being dominated by serial Tavily calls. A one-interviewer
+        full report can issue several independent search queries, so we fan them out with
+        a small cap. This keeps the cost budget the same while reducing wall-clock time.
+        """
+        clean_queries = [x.strip() for x in queries if x and x.strip()]
+        if not clean_queries:
+            self.result_count = 0
+            return []
+
+        self.query_count += len(clean_queries)
+        semaphore = asyncio.Semaphore(4)
+
+        async def run_one(q: str) -> List[SearchResult]:
+            async with semaphore:
+                return await self._run(q, max_results=max_results_per_query, search_depth=search_depth)
+
+        packs = await asyncio.gather(*(run_one(q) for q in clean_queries))
+
         results: List[SearchResult] = []
         seen_urls: set[str] = set()
-        for q in [x.strip() for x in queries if x and x.strip()]:
-            self.query_count += 1
-            hits = await self._run(q, max_results=max_results_per_query, search_depth=search_depth)
+        for hits in packs:
             for hit in hits:
                 url = (hit.get("url") or "").strip()
                 key = url or f"{hit.get('title','')}::{hit.get('content','')[:80]}"
@@ -98,13 +117,13 @@ class SearchProvider:
             "search_depth": search_depth,
             "include_answer": False,
             "include_raw_content": False,
-            "include_images": False,
+            "include_images": True,
             # Tavily supports usage/credit data on supported accounts/endpoints.
             # If absent, we estimate credits below.
             "include_usage": True,
         }
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
+            async with httpx.AsyncClient(timeout=12) as client:
                 resp = await client.post("https://api.tavily.com/search", json=payload)
                 resp.raise_for_status()
                 data = resp.json()
@@ -127,11 +146,13 @@ class SearchProvider:
         self.credit_count += credits
         self.usage_events.append({"query": query, "credits": credits, "usage": usage or None})
 
+        top_level_image = _first_image_url(data.get("images"))
         out: List[SearchResult] = []
-        for r in data.get("results", []) or []:
+        for idx, r in enumerate(data.get("results", []) or []):
             url = (r.get("url") or "").strip()
             title = (r.get("title") or "").strip()
             content = (r.get("content") or r.get("snippet") or "").strip()
+            image_url = _first_image_url(r.get("images") or r.get("image")) or (top_level_image if idx == 0 else "")
             out.append(
                 SearchResult(
                     title=title,
@@ -141,6 +162,7 @@ class SearchProvider:
                     publishedDate=r.get("published_date", "") or r.get("publishedDate", "") or "",
                     score=r.get("score", None),
                     query=query,
+                    imageUrl=image_url,
                 )
             )
         return out
@@ -165,3 +187,19 @@ def _domain(url: str) -> str:
         return host[4:] if host.startswith("www.") else host
     except Exception:
         return ""
+
+
+def _first_image_url(value: Any) -> str:
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        for key in ("url", "image_url", "imageUrl", "src"):
+            raw = value.get(key)
+            if isinstance(raw, str) and raw.strip():
+                return raw.strip()
+    if isinstance(value, list):
+        for item in value:
+            found = _first_image_url(item)
+            if found:
+                return found
+    return ""

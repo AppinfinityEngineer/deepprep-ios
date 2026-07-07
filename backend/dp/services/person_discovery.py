@@ -73,6 +73,7 @@ async def discover(
     title_hits = []
     role_hits = []
     profile_urls = []
+    image_urls = []
     freshness_signals = []
     stale_signals = []
     conflict_signals = []
@@ -93,6 +94,9 @@ async def discover(
             url = h.get("url") or ""
             if url:
                 profile_urls.append(url)
+        img = (h.get("imageUrl") or h.get("profileImageUrl") or h.get("avatarUrl") or h.get("photoUrl") or "").strip()
+        if img and name.lower().split()[0] in lower:
+            image_urls.append(img)
         if any(term in lower for term in ("present", "current", "currently", "director", "head of", "lead", "manager")) and company_norm in lower:
             freshness_signals.append(_hit_label(h))
         if any(term in lower for term in ("former", "previously", "ex-", "past role", "left ")):
@@ -112,6 +116,7 @@ async def discover(
         "urls": [h.get("url", "") for h in hits if h.get("url")],
         "dates": dates,
         "profileUrls": _dedupe(profile_urls),
+        "imageUrls": _dedupe(image_urls),
         "nameHitCount": len(name_hits),
         "companyHitCount": len(company_hits),
         "titleHitCount": len(title_hits),

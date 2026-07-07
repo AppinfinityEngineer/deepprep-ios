@@ -63,8 +63,8 @@ async def _run_pipeline(
     # - Full report: focused paid-quality search, not exhaustive background research.
     #   Keep a one-interviewer report around 6 live queries and use basic depth first;
     #   the LLM is good at synthesis, Tavily is the dominant cost/latency driver.
-    company_max = 1 if is_free else 2
-    company_results = 2 if is_free else 3
+    company_max = 1
+    company_results = 2
     search_depth = "basic"
     company_resolution = await company_resolver.resolve_company(
         company,
@@ -76,8 +76,8 @@ async def _run_pipeline(
     )
     candidates: List[PersonCandidate] = []
     discoveries: List[Dict] = []
-    person_query_max = 2 if is_free else (4 if interviewer_count == 1 else 3)
-    results_per_query = 2 if is_free else 3
+    person_query_max = 2 if interviewer_count == 1 else 1
+    results_per_query = 2
     for iv in hydrated:
         discovery = await person_discovery.discover(
             iv,
@@ -413,6 +413,7 @@ async def build_free_scan_report(
         role=role,
         executiveSummary="Free Intel Scan preview. Unlock the full report for complete intelligence.",
         freeScanSummary=summary,
+        dossiers=_merge_dossiers([], candidates, hydrated_interviewers),
         confidenceNotes=[
             "This is a limited preview using a cost-capped live-search query pack.",
             "Identity match confidence is shown separately from current-role freshness.",
@@ -455,6 +456,7 @@ def _merge_dossiers(narr: list, candidates: List[PersonCandidate], interviewers:
                 interviewerId=getattr(iv, "id", None) if iv else None,
                 name=cand.name,
                 title=cand.possibleTitle,
+                profileImageUrl=cand.profileImageUrl,
                 matchConfidence=_match_label(cand.identityConfidence),
                 roleFreshness=_match_label(cand.currentRoleFreshness),
                 currentRoleStatus=_status_label(cand.currentRoleStatus),

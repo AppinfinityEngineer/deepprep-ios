@@ -25,6 +25,7 @@ def score_candidate(interviewer: InterviewerIn, company: str, role: str, discove
     urls = discovery.get("urls", [])
     source_types = discovery.get("sourceTypes", [])
     profile_urls = discovery.get("profileUrls", [])
+    image_urls = discovery.get("imageUrls", [])
     has_profile_source = bool(profile_urls) or any(classify(d) == "profile" for d in domains)
     only_directory = bool(domains) and all(classify(d) == "directory" for d in domains)
 
@@ -94,6 +95,7 @@ def score_candidate(interviewer: InterviewerIn, company: str, role: str, discove
         name=interviewer.name,
         possibleTitle=interviewer.title,
         possibleCompany=company if company_hits or profile_evidence else None,
+        profileImageUrl=(image_urls[0] if image_urls else None),
         profileUrls=_dedupe(([interviewer.linkedinUrl] if interviewer.linkedinUrl else []) + profile_urls),
         sourceUrls=urls,
         sourceDomains=domains,
