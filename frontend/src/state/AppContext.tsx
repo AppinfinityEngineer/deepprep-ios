@@ -69,10 +69,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setDeviceId(id);
       setOnboardingDone(await Repository.isOnboardingDone());
       setFreeScanUsed(await Repository.isFreeScanUsed());
-      await refreshEntitlement(id);
-      await refreshReports(id);
       stopStoreKitListener = StoreKitService.listenForPurchaseUpdates(id, (ent) => setEntitlement(ent));
       setReady(true);
+      // TestFlight cold starts should not wait on Render/StoreKit/network refreshes.
+      Promise.allSettled([refreshEntitlement(id), refreshReports(id)]).catch(() => undefined);
     })();
     return () => stopStoreKitListener();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,11 +101,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return result.entitlement;
     }
     if (result.pending) {
-      const ent = await StoreKitService.current(deviceId);
-      setEntitlement(ent);
-      return ent;
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1250));
+        const ent = await StoreKitService.current(deviceId);
+        setEntitlement(ent);
+        if (ent.active) return ent;
+      }
+      throw new Error(result.error || "Apple is finishing the purchase. Tap Restore Purchases if it does not unlock automatically.");
     }
-    throw new Error(result.error || "Purchase could not be completed.");
+    throw new Error(result.error || "Purchase could not be completed. If Apple showed success, tap Restore Purchases.");
   }, [deviceId]);
 
   const restorePurchases = useCallback(async () => {

@@ -118,11 +118,11 @@ export function isRealIapAvailable(): boolean {
 function fallbackProduct(): DeepPrepProduct {
   return {
     productId: PRODUCT_ID,
-    title: "DeepPrep Pro Weekly",
-    priceLabel: `${PRICING.introPrice} ${PRICING.introPeriod}`,
-    introLabel: `${PRICING.introPrice} for ${PRICING.introPeriod}`,
-    recurringLabel: `then ${PRICING.recurringPrice} / ${PRICING.recurringPeriod}`,
-    description: "1 Intel Credit today, then 6 Intel Credits every week.",
+    title: "DeepPrep Pro",
+    priceLabel: `${PRICING.recurringPrice}/week`,
+    introLabel: `${PRICING.recurringPrice}/week`,
+    recurringLabel: `${PRICING.recurringPrice}/week · Cancel anytime`,
+    description: "6 Intel Credits every week.",
   };
 }
 
@@ -212,6 +212,23 @@ async function syncPurchase(deviceId: string, purchase: IapPurchase, source: "pu
   return entitlement;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function syncAvailablePurchase(deviceId: string, source: "purchase" | "restore" | "listener"): Promise<Entitlement | null> {
+  const iap = getIapModule();
+  if (!iap?.getAvailablePurchases) return null;
+  try {
+    const purchases = await iap.getAvailablePurchases();
+    const active = purchases.find((candidate) => candidate.productId === PRODUCT_ID);
+    if (!active) return null;
+    return await syncPurchase(deviceId, active, source);
+  } catch {
+    return null;
+  }
+}
+
 async function devMockSync(deviceId: string): Promise<Entitlement> {
   if (!DEV_MOCK_UNLOCK) throw new Error("Native StoreKit is not available in this build. Use an iOS dev-client/TestFlight build or enable dev mock unlock for Expo Go testing.");
   return DeepPrepApi.entitlementSync(deviceId, { productId: PRODUCT_ID, devMockUnlock: true });
@@ -236,12 +253,20 @@ export async function purchase(deviceId: string): Promise<PurchaseResult> {
     if (!result && iap.requestSubscription) {
       result = await iap.requestSubscription({ sku: PRODUCT_ID, request: { ios: { sku: PRODUCT_ID }, android: { skus: [PRODUCT_ID] } }, type: "subs" });
     }
+
     const purchaseResult = purchaseCandidatesFromResult(result).find((candidate) => candidate.productId === PRODUCT_ID);
     if (purchaseResult) {
       const entitlement = await syncPurchase(deviceId, purchaseResult, "purchase");
       return { success: true, entitlement, simulated: false };
     }
-    return { success: true, simulated: false, pending: true };
+
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const entitlement = await syncAvailablePurchase(deviceId, "purchase");
+      if (entitlement?.active) return { success: true, entitlement, simulated: false };
+      await sleep(1250);
+    }
+
+    return { success: true, simulated: false, pending: true, error: "Apple is still finishing the purchase. Tap Restore Purchases in a moment if it does not unlock automatically." };
   } catch (error) { return { success: false, simulated: false, error: String(error) }; }
 }
 

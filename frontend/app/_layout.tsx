@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -18,16 +18,24 @@ if (__DEV__) {
 // Keep the native splash visible from cold start until icon fonts register.
 SplashScreen.preventAutoHideAsync();
 
+const DEEPPREP_SPLASH_MAX_MS = 2500;
+
 export default function RootLayout() {
   const [loaded, error] = useIconFonts();
+  const [splashTimedOut, setSplashTimedOut] = useState(false);
 
   useEffect(() => {
-    if (loaded || error) {
+    const timer = setTimeout(() => setSplashTimedOut(true), DEEPPREP_SPLASH_MAX_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (loaded || error || splashTimedOut) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, error]);
+  }, [loaded, error, splashTimedOut]);
 
-  if (!loaded && !error) return null;
+  if (!loaded && !error && !splashTimedOut) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
