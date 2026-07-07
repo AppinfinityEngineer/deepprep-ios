@@ -236,3 +236,14 @@ Expected wrong-device report read result: `404`.
 ## StoreKit entitlement sync
 
 `POST /api/entitlement/sync` accepts the single launch product `deepprep_pro_weekly` and maps it to `deepprep_pro`. In `APP_ENV=development`, native StoreKit transaction payloads are accepted for TestFlight/sandbox validation. In `APP_ENV=production`, this endpoint must be backed by Apple Server API validation before granting access.
+
+
+## Store / legal
+
+- Subscription: £7.99/week (`deepprep_pro_weekly`)
+- Introductory offer: none
+- Free Intel Scan is the conversion proof before subscribing
+- Privacy Policy: https://thoughtsnaplabs.com/deepprep/privacy
+- Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+- iPad support: off
+- EAS autoIncrement: off; manual build bumps only

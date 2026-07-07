@@ -91,8 +91,8 @@ export default function Settings() {
 
         <SettingRow icon="refresh-cw" label={busy === "restore" ? "Restoring…" : "Restore Purchases"} onPress={restore} testID="settings-restore" />
         <SettingRow icon="external-link" label="Manage Apple Subscription" onPress={() => StoreKitService.openManageSubscriptions()} testID="settings-manage-subscription" />
-        <SettingRow icon="shield" label="Privacy Policy" onPress={() => router.push("/legal/privacy")} testID="settings-privacy" />
-        <SettingRow icon="file-text" label="Terms of Service" onPress={() => router.push("/legal/terms")} testID="settings-terms" />
+        <SettingRow icon="shield" label="Privacy Policy" onPress={() => router.push("https://thoughtsnaplabs.com/deepprep/privacy")} testID="settings-privacy" />
+        <SettingRow icon="file-text" label="Terms of Service" onPress={() => router.push("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")} testID="settings-terms" />
         <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL("mailto:support@thoughtsnaplabs.com")} testID="settings-support" />
         {__DEV__ ? (
           <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Scan + Fresh Device"} onPress={devReset} testID="settings-dev-reset" />

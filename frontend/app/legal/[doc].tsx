@@ -6,48 +6,43 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors, spacing, font } from "@/src/theme";
 
-const PRIVACY = `DeepPrep Privacy Policy (Placeholder)
+const PRIVACY = `DeepPrep Privacy Policy
 
-DeepPrep uses publicly available professional information and the interview details you provide to generate private interview-preparation briefs.
+DeepPrep is provided by ThoughtSnap Labs Ltd.
 
-What we use
-• Company, role, interview date and interviewer details you enter.
-• Optional job descriptions and profile evidence you paste.
-• Publicly available professional web information.
+DeepPrep helps users prepare for professional interviews by creating AI-generated preparation briefs from user-entered interview details and public professional signals.
 
-What we do not do
-• We do not sell your personal data.
-• We do not claim to reveal private, hidden, or confidential information.
-• We do not encourage surveillance of any individual.
+Information processed may include company name, role, job description, interview date, interviewer names, public search results, anonymous device identifiers, purchase/entitlement status, credit usage, and basic diagnostic/cost logs.
 
-Your data
-• Reports are stored so you can view them across sessions and offline.
-• You can delete your data at any time from Settings → Delete My Data.
-• A minimal irreversible fraud-prevention record may be retained to prevent abuse of the free scan.
+DeepPrep uses this information to generate free Intel Scans and full interview reports, manage subscriptions and credits, prevent abuse, and improve reliability.
 
-TODO: Replace this placeholder with your production privacy policy before App Store submission.
+DeepPrep is not a background-check, people-search, employment-screening, or hiring decision tool. Public professional data can be incomplete, outdated, or ambiguous; use reports as preparation guidance only.
 
-Contact: support@thoughtsnaplabs.com`;
+Full Privacy Policy:
+https://thoughtsnaplabs.com/deepprep/privacy
 
-const TERMS = `DeepPrep Terms of Service (Placeholder)
+Contact:
+https://thoughtsnaplabs.com/support`;
 
-By using DeepPrep you agree to the following:
+const TERMS = `DeepPrep Terms of Use
 
-Subscription
-• DeepPrep Pro is offered at £1.99 for the first 3 days, then £7.99 per week.
-• Subscriptions renew automatically until cancelled.
-• You can cancel anytime in your App Store settings.
+DeepPrep Pro is an auto-renewable subscription billed through your Apple ID.
 
-Acceptable use
-• DeepPrep is an interview-preparation tool using public professional data.
-• You agree not to use it to harass, stalk, or surveil any individual.
+Subscription:
+• £7.99 per week
+• Includes 6 Intel Credits every week while subscribed
+• Subscription renews automatically unless cancelled at least 24 hours before the end of the current period
+• You can manage or cancel your subscription in your App Store account settings
 
-Accuracy
-• DeepPrep is honest about confidence and freshness. Public data may be out of date; always confirm details naturally during your interview.
+DeepPrep is an interview-preparation tool. You agree not to use it to harass, stalk, surveil, or make employment or screening decisions about any person.
 
-TODO: Replace this placeholder with your production terms before App Store submission.
+Reports are AI-generated and may be incomplete, outdated, or ambiguous. Always verify important details naturally during your interview process.
 
-Contact: support@thoughtsnaplabs.com`;
+Apple Standard EULA:
+https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+
+Contact:
+https://thoughtsnaplabs.com/support`;
 
 export default function Legal() {
   const { doc } = useLocalSearchParams<{ doc: string }>();

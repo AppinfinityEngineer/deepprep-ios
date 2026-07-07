@@ -15,7 +15,7 @@ from ..utils import now_iso, week_key
 
 ENTITLEMENT_ID = "deepprep_pro"
 PRODUCT_ID = "deepprep_pro_weekly"
-INTRO_CREDITS = 1
+INTRO_CREDITS = 0
 WEEKLY_CREDITS = 6
 
 
@@ -51,7 +51,7 @@ async def sync(device_id: str, receipt, product_id, dev_mock_unlock: bool) -> Di
     already_active = bool(ent.get("active"))
     same_week = ent.get("renewsAt") == current_week
     if not already_active:
-        ent["credits"] = max(ent.get("credits", 0), INTRO_CREDITS + WEEKLY_CREDITS)
+        ent["credits"] = max(ent.get("credits", 0), WEEKLY_CREDITS)
         ent["introUsed"] = True
         ent["renewsAt"] = current_week
     elif not same_week:

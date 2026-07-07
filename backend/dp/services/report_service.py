@@ -411,10 +411,10 @@ async def build_free_scan_report(
         mode="free_scan",
         company=company,
         role=role,
-        executiveSummary="Free Intel Scan preview. Unlock the full report for complete intelligence.",
+        executiveSummary="Free Intel Scan preview. DeepPrep found real company and interviewer signals. Unlock the full report for complete interview intelligence.",
         freeScanSummary=summary,
         confidenceNotes=[
-            "This is a limited preview using a cost-capped live-search query pack.",
+            "This is a focused preview using a conversion-capped live-search query pack.",
             "Identity match confidence is shown separately from current-role freshness.",
             *(primary.evidenceSignals[:1] if primary else []),
         ],

@@ -104,7 +104,7 @@ POST /api/privacy/delete
 - Native StoreKit subscription only.
 - Product ID: `deepprep_pro_weekly`.
 - Entitlement: `deepprep_pro`.
-- Intro: £1.99 first 3 days, 1 Intel Credit.
+- No introductory offer. Free Intel Scan before subscribing.
 - Weekly: £7.99/week, 6 Intel Credits/week.
 - Backend remains authoritative for credits, usage and entitlement state.
 - Reports must show confidence/freshness notes and avoid sensitive/private personal claims.
@@ -133,3 +133,14 @@ Use safe language everywhere:
 > DeepPrep uses user-supplied interview details and publicly available professional information to generate private interview preparation briefs with confidence and freshness notes.
 
 Avoid language such as spy, stalk, hidden data, find anyone, background check, dox, or OSINT.
+
+
+## Store / legal
+
+- Subscription: £7.99/week (`deepprep_pro_weekly`)
+- Introductory offer: none
+- Free Intel Scan is the conversion proof before subscribing
+- Privacy Policy: https://thoughtsnaplabs.com/deepprep/privacy
+- Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+- iPad support: off
+- EAS autoIncrement: off; manual build bumps only

@@ -69,7 +69,18 @@ Branch 7 wires DeepPrep to native StoreKit using the ThoughtSnap Labs direct-IAP
 
 Product ID: `deepprep_pro_weekly`
 Entitlement: `deepprep_pro`
-Launch offer: £1.99 first 3 days, then £7.99/week
+Launch offer: £7.99/week
 Credits: 1 intro/full Intel Credit on activation, then 6 weekly Intel Credits.
 
 Expo Go cannot display Apple purchase sheets. Use an iOS dev-client or TestFlight build for real StoreKit testing. Version/build for first TestFlight lane: `1.0.0` / build `1`.
+
+
+## Store / legal
+
+- Subscription: £7.99/week (`deepprep_pro_weekly`)
+- Introductory offer: none
+- Free Intel Scan is the conversion proof before subscribing
+- Privacy Policy: https://thoughtsnaplabs.com/deepprep/privacy
+- Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+- iPad support: off
+- EAS autoIncrement: off; manual build bumps only

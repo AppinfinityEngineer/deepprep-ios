@@ -16,12 +16,17 @@ import { Entitlement } from "../models/types";
 
 export const PRODUCT_ID = process.env.EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID || "deepprep_pro_weekly";
 export const ENTITLEMENT_ID = "deepprep_pro";
+export const PRIVACY_POLICY_URL = "https://thoughtsnaplabs.com/deepprep/privacy";
+export const TERMS_OF_USE_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 export const PRICING = {
-  introPrice: "£1.99",
-  introPeriod: "first 3 days",
+  introPrice: "£7.99",
+  introPeriod: "week",
   recurringPrice: "£7.99",
   recurringPeriod: "week",
+  headline: "£7.99/week",
+  disclosure: "Subscription renews automatically unless cancelled at least 24 hours before the end of the current period.",
+  credits: "6 Intel Credits every week",
 };
 
 export interface DeepPrepProduct {
