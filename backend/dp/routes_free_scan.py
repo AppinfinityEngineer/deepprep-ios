@@ -51,7 +51,7 @@ async def create(body: FreeScanCreateIn, request: Request):
         raise HTTPException(status_code=503, detail={"message": str(e), "reason": "llm_not_configured"})
     except Exception as e:
         raise HTTPException(status_code=500, detail={"message": str(e), "reason": "generation_failed"})
-    await security.record_cost_event(device_id=device_id, kind="free_scan", report_id=report.id, interview_id=getattr(report, "interviewId", None), cost=report.cost.model_dump() if hasattr(report.cost, "model_dump") else dict(report.cost or {}))
+    await security.record_cost_event(device_id=body.deviceId, kind="free_scan", report_id=report.id, interview_id=getattr(report, "interviewId", None), cost=report.cost.model_dump() if hasattr(report.cost, "model_dump") else dict(report.cost or {}))
     return report.model_dump()
 
 
