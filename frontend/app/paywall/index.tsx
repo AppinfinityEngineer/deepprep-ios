@@ -46,7 +46,7 @@ export default function Paywall() {
       if (ent.active) {
         router.replace("/brief/generating?from=onboarding");
       } else {
-        setMsg("Apple is finishing the purchase. If it does not unlock automatically, tap Restore Purchases.");
+        setMsg("Purchase is pending or could not be completed. If Apple shows success, your report will unlock automatically.");
       }
     } catch {
       setMsg("Something went wrong. Please try again.");
@@ -93,7 +93,7 @@ export default function Paywall() {
           <View style={styles.priceRow}>
             <Text style={styles.price}>{product?.priceLabel || StoreKitService.pricing.introPrice}</Text>
             <View style={styles.introTag}>
-              <Text style={styles.introTagText}>DeepPrep Pro</Text>
+              <Text style={styles.introTagText}>PRO WEEKLY</Text>
             </View>
           </View>
           <Text style={styles.priceSub}>

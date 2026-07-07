@@ -144,9 +144,3 @@ Avoid language such as spy, stalk, hidden data, find anyone, background check, d
 - Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 - iPad support: off
 - EAS autoIncrement: off; manual build bumps only
-
-## TestFlight runtime notes
-
-Production EAS builds embed `EXPO_PUBLIC_BACKEND_URL=https://deepprep-ios-dev.onrender.com` and `EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID=deepprep_pro_weekly` at build time. If TestFlight shows backend/API-key errors, rebuild after confirming `frontend/eas.json` contains those env values.
-
-The app no longer waits for entitlement/report refreshes before showing onboarding; those refreshes run in the background to avoid long cold-start splash delays.
