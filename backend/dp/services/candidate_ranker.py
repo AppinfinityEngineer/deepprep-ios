@@ -93,9 +93,9 @@ def score_candidate(interviewer: InterviewerIn, company: str, role: str, discove
 
     return PersonCandidate(
         name=interviewer.name,
+        profileImageUrl=discovery.get("profileImageUrl"),
         possibleTitle=interviewer.title,
         possibleCompany=company if company_hits or profile_evidence else None,
-        profileImageUrl=(image_urls[0] if image_urls else None),
         profileUrls=_dedupe(([interviewer.linkedinUrl] if interviewer.linkedinUrl else []) + profile_urls),
         sourceUrls=urls,
         sourceDomains=domains,

@@ -161,8 +161,8 @@ class SearchProvider:
                     domain=_domain(url),
                     publishedDate=r.get("published_date", "") or r.get("publishedDate", "") or "",
                     score=r.get("score", None),
+                    imageUrl=_extract_image_url(r),
                     query=query,
-                    imageUrl=image_url,
                 )
             )
         return out
@@ -202,4 +202,26 @@ def _first_image_url(value: Any) -> str:
             found = _first_image_url(item)
             if found:
                 return found
+    return ""
+
+
+def _extract_image_url(result: Dict[str, Any]) -> str:
+    image = result.get("image") or result.get("image_url") or result.get("thumbnail") or result.get("thumbnail_url")
+    if isinstance(image, str):
+        return image.strip()
+    if isinstance(image, dict):
+        for key in ("url", "src", "image_url", "thumbnail_url"):
+            value = image.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    images = result.get("images")
+    if isinstance(images, list):
+        for item in images:
+            if isinstance(item, str) and item.strip():
+                return item.strip()
+            if isinstance(item, dict):
+                for key in ("url", "src", "image_url", "thumbnail_url"):
+                    value = item.get(key)
+                    if isinstance(value, str) and value.strip():
+                        return value.strip()
     return ""

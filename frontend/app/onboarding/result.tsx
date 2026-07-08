@@ -33,6 +33,13 @@ export default function ResultScreen() {
 
   const freshTone = s.roleFreshness === "High" ? "success" : s.roleFreshness === "Low" ? "warning" : "warning";
   const primaryInterviewer = draft.interviewers.find((i) => i.name.trim()) || null;
+  const teaserName = (s as any).interviewerName || primaryInterviewer?.name || "";
+  const teaserTitle = (s as any).interviewerTitle || primaryInterviewer?.title || "";
+  const teaserSignal =
+    (s as any).interviewerSignal ||
+    s.currentRoleStatus ||
+    s.freshnessNote ||
+    "DeepPrep found a possible public professional signal. Unlock the full report for the complete interviewer dossier.";
 
   return (
     <ScreenContainer scroll testID="result-screen">
@@ -47,15 +54,27 @@ export default function ResultScreen() {
       </View>
 
 
-      {primaryInterviewer ? (
+      {teaserName ? (
         <Card style={styles.scanInterviewerCard}>
           <View style={styles.scanInterviewerRow}>
-            <InterviewerAvatar person={primaryInterviewer} size={64} label="Open possible interviewer image" />
+            <InterviewerAvatar
+              person={{
+                ...(primaryInterviewer || { name: teaserName }),
+                name: teaserName,
+                title: teaserTitle,
+                matchConfidence: (freeScanReport.dossiers?.[0] as any)?.matchConfidence || "Medium",
+                roleFreshness: (freeScanReport.dossiers?.[0] as any)?.roleFreshness || s.roleFreshness || "Unclear",
+                currentRoleStatus: (freeScanReport.dossiers?.[0] as any)?.currentRoleStatus || s.currentRoleStatus || "Unclear",
+                profileImageUrl: (freeScanReport.dossiers?.[0] as any)?.profileImageUrl,
+              } as any}
+              size={64}
+              label="Open possible interviewer image"
+            />
             <View style={{ flex: 1 }}>
-              <Text style={styles.scanEyebrow}>Possible interviewer found</Text>
-              <Text style={styles.scanName}>{primaryInterviewer.name}</Text>
-              {primaryInterviewer.title ? <Text style={styles.scanTitle}>{primaryInterviewer.title}</Text> : null}
-              <Text style={styles.scanHint}>Tap the circle to enlarge. If a public image is available, DeepPrep will show it; otherwise we use a safe initials placeholder.</Text>
+              <Text style={styles.scanEyebrow}>Interviewer signal found</Text>
+              <Text style={styles.scanName}>{teaserName}</Text>
+              {teaserTitle ? <Text style={styles.scanTitle}>{teaserTitle}</Text> : null}
+              <Text style={styles.scanHint}>{teaserSignal}</Text>
             </View>
           </View>
         </Card>

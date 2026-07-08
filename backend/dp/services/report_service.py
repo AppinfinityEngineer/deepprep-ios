@@ -128,6 +128,22 @@ def _free_scan_display_score(primary: Optional[PersonCandidate]) -> int:
     return min(score, 95)
 
 
+
+def _free_interviewer_signal(primary: Optional[PersonCandidate]) -> str:
+    if not primary:
+        return "No interviewer-specific public signal was strong enough in this preview."
+    title = primary.possibleTitle or "professional profile"
+    status = primary.currentRoleStatus
+    if status == "verified_from_user_profile_evidence":
+        return f"User-supplied profile evidence points to {title}; use this confidently but naturally."
+    if status == "latest_public_data":
+        return f"Public results suggest a current/recent {title} signal; confirm naturally in the interview."
+    if status == "stale_public_data":
+        return f"Public results found {title} style evidence, but it may be previous or stale."
+    if status == "conflicting":
+        return f"Public results found mixed signals around {title}; confirm the exact current role naturally."
+    return f"Public results found a possible {title} signal, but current-role status is not confirmed."
+
 def _free_freshness_note(primary: Optional[PersonCandidate]) -> str:
     if not primary:
         return "No interviewer match was available for freshness scoring."
@@ -394,6 +410,9 @@ async def build_free_scan_report(
     note = _free_freshness_note(primary)
 
     summary = FreeScanSummary(
+        interviewerName=primary.name if primary else None,
+        interviewerTitle=primary.possibleTitle if primary else None,
+        interviewerSignal=_free_interviewer_signal(primary),
         matchConfidence=display_score,
         matchLabel=_score_label(display_score),
         roleFreshness=_match_label(fresh),
@@ -413,7 +432,7 @@ async def build_free_scan_report(
         role=role,
         executiveSummary="Free Intel Scan preview. Unlock the full report for complete intelligence.",
         freeScanSummary=summary,
-        dossiers=_merge_dossiers([], candidates, hydrated_interviewers),
+        dossiers=_free_scan_dossiers(candidates),
         confidenceNotes=[
             "This is a limited preview using a cost-capped live-search query pack.",
             "Identity match confidence is shown separately from current-role freshness.",
@@ -430,6 +449,32 @@ async def build_free_scan_report(
     )
     return report
 
+
+
+def _free_scan_dossiers(candidates: List[PersonCandidate]) -> List[InterviewerDossier]:
+    out: List[InterviewerDossier] = []
+    for cand in candidates[:1]:
+        out.append(
+            InterviewerDossier(
+                name=cand.name,
+                profileImageUrl=cand.profileImageUrl,
+                title=cand.possibleTitle,
+                matchConfidence=_match_label(cand.identityConfidence),
+                roleFreshness=_match_label(cand.currentRoleFreshness),
+                currentRoleStatus=_status_label(cand.currentRoleStatus),
+                recommendedAction=freshness.recommended_action_text(cand),
+                profileSummary=_free_interviewer_signal(cand),
+                careerPath=[],
+                likelyPriorities=[],
+                interviewStyle="",
+                questionsTheyMayAsk=[],
+                goodTopics=[],
+                avoid=[],
+                sourceNotes=[f"{len(cand.sourceDomains)} source domain(s) reviewed"],
+                confidenceNotes=cand.evidenceSignals[:2],
+            )
+        )
+    return out
 
 def _clean_q(q: dict) -> dict:
     conf = q.get("confidence", "medium")

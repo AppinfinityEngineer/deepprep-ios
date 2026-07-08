@@ -58,6 +58,9 @@ class PersonCandidate(BaseModel):
 
 # ---------------- Report sub-models ----------------
 class FreeScanSummary(BaseModel):
+    interviewerName: Optional[str] = None
+    interviewerTitle: Optional[str] = None
+    interviewerSignal: Optional[str] = None
     matchConfidence: int
     matchLabel: str
     roleFreshness: str

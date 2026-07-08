@@ -14,6 +14,9 @@ export interface Interviewer {
 }
 
 export interface FreeScanSummary {
+  interviewerName?: string;
+  interviewerTitle?: string;
+  interviewerSignal?: string;
   matchConfidence: number;
   matchLabel: string;
   roleFreshness: string;

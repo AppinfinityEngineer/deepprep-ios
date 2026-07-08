@@ -95,7 +95,7 @@ export default function Generating() {
           await setPendingReportJob(null);
           setError({
             reason: status.errorReason || "generation_failed",
-            msg: status.errorMessage || "The backend could not finish this report. Try again — your failed credit was refunded.",
+            msg: status.errorMessage || "DeepPrep could not finish this report yet. Try again — if generation failed, your credit is protected.",
           });
           await ReviewService.record("report_failed");
           return;
@@ -105,7 +105,7 @@ export default function Generating() {
     } catch (e: any) {
       setError({
         reason: "poll_failed",
-        msg: "DeepPrep could not check the saved report status. Check your connection and try again — you do not need to repurchase.",
+        msg: "DeepPrep could not check your saved report status. Check your connection and tap Check Again — you do not need to repurchase.",
       });
     } finally {
       polling.current = false;
@@ -184,7 +184,7 @@ export default function Generating() {
 
       {error || timedOutLocally ? (
         <View style={styles.errorBox} testID="generating-error">
-          <Text style={styles.errorTitle}>{timedOutLocally ? "Still not ready" : "Report not ready"}</Text>
+          <Text style={styles.errorTitle}>{timedOutLocally ? "Still not ready" : "Report still processing"}</Text>
           <Text style={styles.errorText}>{error?.msg || "This report is taking longer than expected. You can retry without repurchasing, or come back later and DeepPrep will check again."}</Text>
           <Button label="Check Again" variant="white" onPress={() => activeInterviewId ? void pollStatus(activeInterviewId) : onRetry()} style={{ marginTop: spacing.lg }} testID="generating-error-retry" />
           <Button label="Start New Brief" variant="dark" onPress={() => router.replace("/brief/new")} style={{ marginTop: spacing.md }} testID="generating-error-new" />

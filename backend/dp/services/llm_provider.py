@@ -178,13 +178,22 @@ async def synthesize(ctx: Dict[str, Any], mode: str) -> Dict[str, Any]:
     except httpx.HTTPStatusError as e:
         body = e.response.text[:500] if e.response is not None else ""
         code = e.response.status_code if e.response is not None else "unknown"
-        raise LLMConfigError(f"LLM provider returned HTTP {code}: {body}") from e
+        if mode == "full":
+            data = _fallback_full_report(ctx, reason=f"AI provider returned HTTP {code}")
+        else:
+            raise LLMConfigError(f"LLM provider returned HTTP {code}: {body}") from e
     except httpx.TimeoutException as e:
-        raise LLMConfigError("LLM provider timed out") from e
+        if mode == "full":
+            data = _fallback_full_report(ctx, reason="AI provider timed out")
+        else:
+            raise LLMConfigError("LLM provider timed out") from e
     except Exception as e:
-        raise LLMConfigError(f"LLM synthesis failed: {e}") from e
+        if mode == "full":
+            data = _fallback_full_report(ctx, reason="AI synthesis was temporarily unavailable")
+        else:
+            raise LLMConfigError(f"LLM synthesis failed: {e}") from e
 
-    data = _normalise_free(data) if mode == "free_scan" else _normalise_full(data, ctx)
+    data = _normalise_free(data) if mode == "free_scan" else (_normalise_full(data, ctx) if data.get("_provider") != "fallback" else data)
     data["_provider"] = provider
     data["_model"] = model
     data["_input_chars"] = input_chars
@@ -423,4 +432,90 @@ def _mock_output(ctx: Dict[str, Any], mode: str) -> Dict[str, Any]:
         "_model": "mock",
         "_input_chars": 500,
         "_output_chars": 1200,
+    }
+
+
+def _fallback_full_report(ctx: Dict[str, Any], reason: str = "AI synthesis timed out") -> Dict[str, Any]:
+    company = ctx.get("company", "the company")
+    role = ctx.get("role", "the role")
+    candidates = ctx.get("candidates") or []
+    company_resolution = ctx.get("companyResolution") or {}
+    discoveries = ctx.get("discoveries") or []
+    snippets = company_resolution.get("snippets") or []
+    titles = company_resolution.get("topTitles") or []
+    domains = company_resolution.get("sourceDomains") or []
+
+    company_summary = snippets[0] if snippets else f"Public signals were reviewed for {company}. Use the interview to connect your {role} experience to the company context."
+    signals = []
+    for title in titles[:4]:
+        if title:
+            signals.append(str(title)[:160])
+    while len(signals) < 3:
+        signals.append(f"Prepare to connect {role} examples to {company}'s public business and technology signals.")
+
+    dossiers = []
+    for i, cand in enumerate(candidates or []):
+        discovery = discoveries[i] if i < len(discoveries) and isinstance(discoveries[i], dict) else {}
+        name = cand.get("name") or "Interviewer"
+        possible_title = cand.get("possibleTitle") or ""
+        title_phrase = f" ({possible_title})" if possible_title else ""
+        top_titles = discovery.get("topTitles") or []
+        profile_summary = f"Public results suggest professional context for {name}{title_phrase}, but current-role details should be confirmed naturally."
+        if top_titles:
+            profile_summary += f" Strongest public signal: {str(top_titles[0])[:140]}."
+        dossiers.append({
+            "name": name,
+            "title": possible_title,
+            "profileSummary": profile_summary,
+            "careerPath": [s for s in [*(top_titles[:3] or []), "Current-role freshness should be confirmed in conversation."] if s][:4],
+            "likelyPriorities": ["Practical role fit", "Evidence of measurable impact", "Clear communication under uncertainty"],
+            "interviewStyle": "Likely practical and evidence-led; treat this as inferred from public role/company signals.",
+            "questionsTheyMayAsk": [
+                f"Can you walk me through a {role} project with measurable impact?",
+                "How do you handle ambiguous requirements and trade-offs?",
+                "How would you improve reliability, quality, or reporting in this environment?",
+            ],
+            "goodTopics": ["Measurable outcomes", "Trade-offs and reliability", "How your experience maps to the company context"],
+            "avoid": ["Do not assert unverified current titles", "Avoid generic answers without evidence"],
+            "sourceNotes": [f"Fallback synthesis from live search domains: {', '.join(domains[:4]) or 'limited public domains'}"],
+            "confidenceNotes": ["AI synthesis was unavailable, so this dossier was generated from deterministic search evidence."],
+        })
+    if not dossiers:
+        dossiers.append({
+            "name": "Interviewer", "title": "", "profileSummary": "No interviewer-specific evidence was available; prepare from company and role context.",
+            "careerPath": [], "likelyPriorities": ["Role fit", "Measurable impact", "Communication"],
+            "interviewStyle": "Unknown; prepare concise examples and clarifying questions.",
+            "questionsTheyMayAsk": [f"Tell me about a relevant {role} project.", "How do you handle ambiguity?", f"Why {company}?"],
+            "goodTopics": ["Impact metrics", "Collaboration", "Learning curve"], "avoid": ["Unsupported claims", "Overly generic answers"],
+            "sourceNotes": ["Generated from company and role context only"], "confidenceNotes": ["No person-specific evidence available"],
+        })
+
+    return {
+        "executiveSummary": f"Prepare for {role} at {company} with concise STAR examples and cautious use of public-source context. AI synthesis was slower than expected, so this report uses the live search evidence directly.",
+        "companyBrief": {
+            "summary": company_summary,
+            "signals": signals[:5],
+            "risks": ["Public data may be incomplete or stale", "Exact panel priorities may differ from source signals"],
+            "opportunities": ["Lead with measurable impact", "Ask informed questions about current priorities", "Connect your examples to the role context"],
+        },
+        "dossiers": dossiers,
+        "likelyQuestions": [
+            {"question": f"Can you walk me through a relevant {role} project?", "why": "Tests hands-on fit for the role.", "starAngle": "Use Situation, Task, Action, Result with measurable outcome.", "confidence": "high"},
+            {"question": "How do you handle ambiguity and trade-offs?", "why": "Tests judgement and communication.", "starAngle": "Use an example where you clarified scope and delivered impact.", "confidence": "medium"},
+            {"question": f"Why {company}, and why this role now?", "why": "Tests motivation and preparation.", "starAngle": "Connect company signals to your experience and goals.", "confidence": "medium"},
+            {"question": "How do you ensure quality and reliability in your work?", "why": "Common technical/operational concern.", "starAngle": "Describe checks, monitoring, testing, or stakeholder feedback loops.", "confidence": "medium"},
+            {"question": "Tell me about a time you improved a process or system.", "why": "Tests practical impact.", "starAngle": "Quantify before/after improvement.", "confidence": "medium"},
+        ],
+        "talkingPoints": [
+            {"point": "Lead with measurable impact", "advice": "Use numbers, before/after outcomes, and trade-offs."},
+            {"point": "Show calm handling of ambiguity", "advice": "Explain how you clarified requirements and reduced risk."},
+            {"point": "Ask informed context questions", "advice": "Use public signals as a starting point, not as claims."},
+        ],
+        "dayOfBrief": f"Who you are meeting: likely hiring/interview panel for {role}. What they may care about: practical delivery, communication, and measurable impact. Likely questions: relevant projects, trade-offs, quality/reliability, and why {company}. What to say: concise STAR stories with numbers. What to avoid: unsupported assumptions about current titles or internal systems. Final reminder: ask smart clarification questions and stay evidence-led.",
+        "confidenceNotes": [f"Fallback report used because {reason}.", "Generated from live search/candidate scoring evidence rather than full AI narrative synthesis.", "Verify important current-role details naturally during the interview."],
+        "freshnessNotes": ["Public data can be stale or incomplete.", "Treat person-specific signals as preparation guidance, not confirmed current facts."],
+        "_provider": "fallback",
+        "_model": "deterministic_search_fallback",
+        "_input_chars": len(json.dumps(ctx, default=str)) if ctx else 0,
+        "_output_chars": 1800,
     }
