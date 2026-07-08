@@ -5,7 +5,7 @@ import { Repository, PendingReportJob } from "../storage/repository";
 import { DeepPrepApi } from "../api/deepprep";
 import { StoreKitService } from "../storekit/StoreKitService";
 import { Entitlement, InterviewDraft, Report, emptyDraft } from "../models/types";
-import { SCREENSHOT_MODE } from "../config/screenshotMode";
+import { disableRuntimeScreenshotMode, enableRuntimeScreenshotMode, isScreenshotMode } from "../config/screenshotMode";
 import { SCREENSHOT_DRAFT, SCREENSHOT_ENTITLEMENT, SCREENSHOT_REPORTS } from "../mock/screenshotData";
 
 interface AppState {
@@ -18,6 +18,7 @@ interface AppState {
   freeScanReport: Report | null;
   reports: Report[];
   pendingReportJob: PendingReportJob | null;
+  screenshotModeActive: boolean;
 
   setDraft: (d: Partial<InterviewDraft>) => void;
   resetDraft: () => void;
@@ -30,6 +31,8 @@ interface AppState {
   refreshReports: () => Promise<void>;
   setPendingReportJob: (job: PendingReportJob | null) => Promise<void>;
   devResetForTesting: () => Promise<string>;
+  enableScreenshotModeForDev: () => Promise<void>;
+  disableScreenshotModeForDev: () => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -44,6 +47,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [freeScanReport, setFreeScanReport] = useState<Report | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [pendingReportJobState, setPendingReportJobState] = useState<PendingReportJob | null>(null);
+  const [screenshotModeActive, setScreenshotModeActive] = useState(isScreenshotMode());
 
   const refreshEntitlement = useCallback(async (id?: string) => {
     const did = id || deviceId;
@@ -70,7 +74,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let stopStoreKitListener = () => {};
     (async () => {
-      if (SCREENSHOT_MODE) {
+      if (isScreenshotMode()) {
         const id = "screenshot-device";
         setDeviceId(id);
         setOnboardingDone(true);
@@ -117,7 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const unlockPro = useCallback(async () => {
-    if (SCREENSHOT_MODE) {
+    if (isScreenshotMode()) {
       setEntitlement(SCREENSHOT_ENTITLEMENT);
       return SCREENSHOT_ENTITLEMENT;
     }
@@ -135,7 +139,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [deviceId]);
 
   const restorePurchases = useCallback(async () => {
-    if (SCREENSHOT_MODE) {
+    if (isScreenshotMode()) {
       setEntitlement(SCREENSHOT_ENTITLEMENT);
       return SCREENSHOT_ENTITLEMENT;
     }
@@ -175,6 +179,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return newId;
   }, [deviceId]);
 
+  const enableScreenshotModeForDev = useCallback(async () => {
+    enableRuntimeScreenshotMode();
+    setScreenshotModeActive(true);
+    setDeviceId("screenshot-device");
+    setOnboardingDone(true);
+    setFreeScanUsed(true);
+    setEntitlement(SCREENSHOT_ENTITLEMENT);
+    setFreeScanReport(null);
+    setReports(SCREENSHOT_REPORTS);
+    setPendingReportJobState(null);
+    setDraftState(SCREENSHOT_DRAFT);
+  }, []);
+
+  const disableScreenshotModeForDev = useCallback(async () => {
+    disableRuntimeScreenshotMode();
+    setScreenshotModeActive(false);
+    const id = await Repository.getDeviceId();
+    setDeviceId(id);
+    setOnboardingDone(await Repository.isOnboardingDone());
+    setFreeScanUsed(await Repository.isFreeScanUsed());
+    setPendingReportJobState(await Repository.getPendingReportJob());
+    setDraftState(emptyDraft());
+    setEntitlement(null);
+    setReports([]);
+    setFreeScanReport(null);
+    void refreshEntitlement(id);
+    void refreshReports(id);
+  }, [refreshEntitlement, refreshReports]);
+
   return (
     <Ctx.Provider
       value={{
@@ -187,6 +220,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         freeScanReport,
         reports,
         pendingReportJob: pendingReportJobState,
+        screenshotModeActive,
         setDraft,
         resetDraft,
         setFreeScanReport,
@@ -198,6 +232,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         refreshReports,
         setPendingReportJob,
         devResetForTesting,
+        enableScreenshotModeForDev,
+        disableScreenshotModeForDev,
       }}
     >
       {children}
