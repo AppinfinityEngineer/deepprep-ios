@@ -15,7 +15,7 @@ import { APPLE_STANDARD_EULA_URL, PRIVACY_POLICY_URL, SUPPORT_MAILTO_URL } from 
 
 export default function Settings() {
   const router = useRouter();
-  const { entitlement, deviceId, refreshEntitlement, refreshReports, devResetForTesting, restorePurchases, screenshotModeActive, enableScreenshotModeForDev, disableScreenshotModeForDev } = useApp();
+  const { entitlement, deviceId, refreshEntitlement, refreshReports, devResetForTesting, restorePurchases } = useApp();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -49,31 +49,6 @@ export default function Settings() {
       router.replace("/onboarding");
     } catch {
       setMsg("Could not reset dev scan.");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const enableScreenshots = async () => {
-    setBusy("screenshot-mode");
-    setMsg(null);
-    try {
-      await enableScreenshotModeForDev();
-      HapticsService.success();
-      setMsg("Screenshot mode active. Fictional demo data is loaded.");
-      router.replace("/(tabs)");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const disableScreenshots = async () => {
-    setBusy("screenshot-mode");
-    setMsg(null);
-    try {
-      await disableScreenshotModeForDev();
-      HapticsService.success();
-      setMsg("Screenshot mode off. Live/dev app state restored.");
     } finally {
       setBusy(null);
     }
@@ -121,22 +96,11 @@ export default function Settings() {
         <SettingRow icon="file-text" label="Apple Standard EULA" onPress={() => Linking.openURL(APPLE_STANDARD_EULA_URL)} testID="settings-terms" />
         <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL(SUPPORT_MAILTO_URL)} testID="settings-support" />
         {__DEV__ ? (
-          <>
-            <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Scan + Fresh Device"} onPress={devReset} testID="settings-dev-reset" />
-            <SettingRow
-              icon="camera"
-              label={busy === "screenshot-mode" ? "Preparing screenshot mode…" : screenshotModeActive ? "Turn Screenshot Mode Off" : "Launch Screenshot Mode"}
-              onPress={screenshotModeActive ? disableScreenshots : enableScreenshots}
-              testID="settings-screenshot-mode"
-            />
-          </>
+          <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Scan + Fresh Device"} onPress={devReset} testID="settings-dev-reset" />
         ) : null}
         <SettingRow icon="trash-2" label={busy === "delete" ? "Deleting…" : "Delete My Data"} danger onPress={deleteData} testID="settings-delete" />
 
         {msg ? <Text style={styles.msg} testID="settings-message">{msg}</Text> : null}
-        {__DEV__ && screenshotModeActive ? (
-          <Text style={styles.screenshotNote} testID="settings-screenshot-active">Screenshot Mode ACTIVE · Fictional data only</Text>
-        ) : null}
 
         <Text style={styles.privacyNote}>
           DeepPrep uses publicly available professional information and your interview details to generate
@@ -172,7 +136,6 @@ const styles = StyleSheet.create({
   },
   rowLabel: { flex: 1, color: colors.textPrimary, fontSize: font.body, fontWeight: font.medium },
   msg: { color: colors.textSecondary, fontSize: font.small, textAlign: "center", marginTop: spacing.md },
-  screenshotNote: { color: colors.accent, fontSize: font.tiny, textAlign: "center", marginTop: spacing.md, fontWeight: font.bold },
   privacyNote: { color: colors.textMuted, fontSize: font.tiny, lineHeight: 18, marginTop: spacing.xl, textAlign: "center" },
   version: { color: colors.textMuted, fontSize: font.tiny, textAlign: "center", marginTop: spacing.lg },
 });
