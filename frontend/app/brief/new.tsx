@@ -60,16 +60,16 @@ export default function NewBrief() {
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={8}>
         <ScrollView contentContainerStyle={{ padding: spacing.xl }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <TextField label="Company" value={company} onChangeText={setCompany} placeholder="Confused.com" testID="nb-company" autoCapitalize="words" />
-          <TextField label="Role" value={role} onChangeText={setRole} placeholder="Senior Data Engineer" testID="nb-role" autoCapitalize="words" />
-          <TextField label="Interview date" value={date} onChangeText={setDate} placeholder="e.g. 30 May 2026" testID="nb-date" />
+          <TextField label="Company" value={company} onChangeText={setCompany} placeholder="Company name" testID="nb-company" autoCapitalize="words" />
+          <TextField label="Role" value={role} onChangeText={setRole} placeholder="Role you’re interviewing for" testID="nb-role" autoCapitalize="words" />
+          <TextField label="Interview date" value={date} onChangeText={setDate} placeholder="Interview date" testID="nb-date" />
 
           <Text style={styles.label}>Interviewers (optional)</Text>
           {interviewers.map((iv, i) => (
             <View key={i} style={styles.ivCard}>
-              <TextField label={`Interviewer ${i + 1}`} value={iv.name} onChangeText={(t) => update(i, { name: t })} placeholder="Full name" testID={`nb-iv-name-${i}`} autoCapitalize="words" />
-              <TextField label="Title (optional)" value={iv.title || ""} onChangeText={(t) => update(i, { title: t })} placeholder="Their title" testID={`nb-iv-title-${i}`} />
-              <TextField label="LinkedIn / profile URL (optional)" value={iv.linkedinUrl || ""} onChangeText={(t) => update(i, { linkedinUrl: t })} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID={`nb-iv-url-${i}`} />
+              <TextField label={`Interviewer ${i + 1}`} value={iv.name} onChangeText={(t) => update(i, { name: t })} placeholder="Interviewer name" testID={`nb-iv-name-${i}`} autoCapitalize="words" />
+              <TextField label="Title (optional)" value={iv.title || ""} onChangeText={(t) => update(i, { title: t })} placeholder="Interviewer job title" testID={`nb-iv-title-${i}`} />
+              <TextField label="LinkedIn / profile URL (optional)" value={iv.linkedinUrl || ""} onChangeText={(t) => update(i, { linkedinUrl: t })} placeholder="Optional profile URL" autoCapitalize="none" autoCorrect={false} testID={`nb-iv-url-${i}`} />
             </View>
           ))}
           {interviewers.length < 4 ? (
@@ -79,9 +79,9 @@ export default function NewBrief() {
             </Pressable>
           ) : null}
 
-          <TextArea label="Job description (optional)" value={jd} onChangeText={setJd} placeholder="Paste the job description…" testID="nb-jd" />
-          <TextField label="Primary interviewer LinkedIn / profile URL (optional)" value={profileUrl} onChangeText={setProfileUrl} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID="nb-profile" />
-          <TextArea label="Primary interviewer profile text / headline (optional)" value={profileText} onChangeText={setProfileText} placeholder="Paste current profile headline or text to improve freshness…" maxLength={4000} testID="nb-profile-text" />
+          <TextArea label="Job description (optional)" value={jd} onChangeText={setJd} placeholder="Paste job description or key responsibilities" testID="nb-jd" />
+          <TextField label="Primary interviewer LinkedIn / profile URL (optional)" value={profileUrl} onChangeText={setProfileUrl} placeholder="Optional profile URL" autoCapitalize="none" autoCorrect={false} testID="nb-profile" />
+          <TextArea label="Primary interviewer profile text / headline (optional)" value={profileText} onChangeText={setProfileText} placeholder="Paste current profile headline or public profile text" maxLength={4000} testID="nb-profile-text" />
 
           <Text style={styles.creditHint}>
             {interviewers.filter((i) => i.name.trim()).length >= 3 ? "Panel brief — 2 credits" : "Standard brief — 1 credit"} ·{" "}

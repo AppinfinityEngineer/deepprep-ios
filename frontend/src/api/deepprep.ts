@@ -1,6 +1,8 @@
 // Typed DeepPrep API bindings.
 import { http } from "./client";
 import { Entitlement, InterviewDraft, Report } from "../models/types";
+import { SCREENSHOT_MODE } from "../config/screenshotMode";
+import { SCREENSHOT_ENTITLEMENT, SCREENSHOT_FREE_SCAN_REPORT, SCREENSHOT_REPORT, SCREENSHOT_REPORTS } from "../mock/screenshotData";
 
 function clean(v?: string) {
   const t = v?.trim();
@@ -58,38 +60,40 @@ export type ReportJobStatus = {
 };
 
 export const DeepPrepApi = {
-  health: () => http.get<{ status: string }>("/health"),
+  health: () => SCREENSHOT_MODE ? Promise.resolve({ status: "ok" }) : http.get<{ status: string }>("/health"),
 
-  freeScanEligibility: (deviceId: string, userAgent?: string) =>
-    http.post<{ eligible: boolean; reason: string; message?: string; freeScanReportId?: string }>(
-      "/free-scan/eligibility",
-      { deviceId, userAgent }
-    ),
+  freeScanEligibility: (deviceId: string, userAgent?: string): Promise<{ eligible: boolean; reason: string; message?: string; freeScanReportId?: string }> =>
+    SCREENSHOT_MODE
+      ? Promise.resolve({ eligible: true, reason: "screenshot_mode" })
+      : http.post<{ eligible: boolean; reason: string; message?: string; freeScanReportId?: string }>(
+          "/free-scan/eligibility",
+          { deviceId, userAgent }
+        ),
 
   freeScanCreate: (deviceId: string, d: InterviewDraft) =>
-    http.post<Report>("/free-scan/create", interviewPayload(deviceId, d)),
+    SCREENSHOT_MODE ? Promise.resolve(SCREENSHOT_FREE_SCAN_REPORT) : http.post<Report>("/free-scan/create", interviewPayload(deviceId, d)),
 
-  getFreeScan: (id: string) => http.get<Report>(`/free-scan/${id}`),
+  getFreeScan: (id: string) => SCREENSHOT_MODE ? Promise.resolve(SCREENSHOT_FREE_SCAN_REPORT) : http.get<Report>(`/free-scan/${id}`),
 
   createReport: (deviceId: string, d: InterviewDraft) =>
-    http.post<{ report: Report; creditsRemaining: number }>("/reports", interviewPayload(deviceId, d)),
+    SCREENSHOT_MODE ? Promise.resolve({ report: SCREENSHOT_REPORT, creditsRemaining: 6 }) : http.post<{ report: Report; creditsRemaining: number }>("/reports", interviewPayload(deviceId, d)),
 
   startReport: (deviceId: string, d: InterviewDraft) =>
-    http.post<ReportJobStart>("/reports/start", interviewPayload(deviceId, d)),
+    SCREENSHOT_MODE ? Promise.resolve({ interviewId: SCREENSHOT_REPORT.interviewId, status: "generating", creditsRemaining: 6 }) : http.post<ReportJobStart>("/reports/start", interviewPayload(deviceId, d)),
 
-  getReportStatus: (deviceId: string, interviewId: string) =>
-    http.get<ReportJobStatus>(withDevice(`/reports/status/${interviewId}`, deviceId)),
+  getReportStatus: (deviceId: string, interviewId: string): Promise<ReportJobStatus> =>
+    SCREENSHOT_MODE ? Promise.resolve({ interviewId: SCREENSHOT_REPORT.interviewId, status: "ready", reportId: SCREENSHOT_REPORT.id, report: SCREENSHOT_REPORT }) : http.get<ReportJobStatus>(withDevice(`/reports/status/${interviewId}`, deviceId)),
 
-  listReports: (deviceId: string) => http.get<Report[]>(`/reports?deviceId=${encodeURIComponent(deviceId)}`),
-  getReport: (id: string, deviceId: string) => http.get<Report>(withDevice(`/reports/${id}`, deviceId)),
+  listReports: (deviceId: string) => SCREENSHOT_MODE ? Promise.resolve(SCREENSHOT_REPORTS) : http.get<Report[]>(`/reports?deviceId=${encodeURIComponent(deviceId)}`),
+  getReport: (id: string, deviceId: string) => SCREENSHOT_MODE ? Promise.resolve(SCREENSHOT_REPORT) : http.get<Report>(withDevice(`/reports/${id}`, deviceId)),
 
   entitlementSync: (deviceId: string, opts: { receipt?: string; productId?: string; devMockUnlock?: boolean }) =>
-    http.post<Entitlement>("/entitlement/sync", { deviceId, ...opts }),
+    SCREENSHOT_MODE ? Promise.resolve(SCREENSHOT_ENTITLEMENT) : http.post<Entitlement>("/entitlement/sync", { deviceId, ...opts }),
 
-  getEntitlement: (deviceId: string) => http.get<Entitlement>(`/entitlement?deviceId=${encodeURIComponent(deviceId)}`),
+  getEntitlement: (deviceId: string) => SCREENSHOT_MODE ? Promise.resolve(SCREENSHOT_ENTITLEMENT) : http.get<Entitlement>(`/entitlement?deviceId=${encodeURIComponent(deviceId)}`),
 
   getUsage: (deviceId: string) =>
-    http.get<{ creditsRemaining: number; active: boolean; introUsed: boolean }>(`/usage?deviceId=${encodeURIComponent(deviceId)}`),
+    SCREENSHOT_MODE ? Promise.resolve({ creditsRemaining: 6, active: true, introUsed: true }) : http.get<{ creditsRemaining: number; active: boolean; introUsed: boolean }>(`/usage?deviceId=${encodeURIComponent(deviceId)}`),
 
   privacyDelete: (deviceId: string) => http.post<{ deleted: boolean }>("/privacy/delete", { deviceId }),
 

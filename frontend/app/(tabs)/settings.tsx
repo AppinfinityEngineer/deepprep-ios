@@ -11,6 +11,7 @@ import { useApp } from "@/src/state/AppContext";
 import { StoreKitService } from "@/src/storekit/StoreKitService";
 import { DeepPrepApi } from "@/src/api/deepprep";
 import { HapticsService } from "@/src/haptics/HapticsService";
+import { APPLE_STANDARD_EULA_URL, PRIVACY_POLICY_URL, SUPPORT_MAILTO_URL } from "@/src/config/legal";
 
 export default function Settings() {
   const router = useRouter();
@@ -91,9 +92,9 @@ export default function Settings() {
 
         <SettingRow icon="refresh-cw" label={busy === "restore" ? "Restoring…" : "Restore Purchases"} onPress={restore} testID="settings-restore" />
         <SettingRow icon="external-link" label="Manage Apple Subscription" onPress={() => StoreKitService.openManageSubscriptions()} testID="settings-manage-subscription" />
-        <SettingRow icon="shield" label="Privacy Policy" onPress={() => router.push("/legal/privacy")} testID="settings-privacy" />
-        <SettingRow icon="file-text" label="Terms of Service" onPress={() => router.push("/legal/terms")} testID="settings-terms" />
-        <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL("mailto:support@thoughtsnaplabs.com")} testID="settings-support" />
+        <SettingRow icon="shield" label="Privacy Policy" onPress={() => Linking.openURL(PRIVACY_POLICY_URL)} testID="settings-privacy" />
+        <SettingRow icon="file-text" label="Apple Standard EULA" onPress={() => Linking.openURL(APPLE_STANDARD_EULA_URL)} testID="settings-terms" />
+        <SettingRow icon="mail" label="Support" onPress={() => Linking.openURL(SUPPORT_MAILTO_URL)} testID="settings-support" />
         {__DEV__ ? (
           <SettingRow icon="rotate-ccw" label={busy === "dev-reset" ? "Resetting dev scan…" : "Reset Dev Scan + Fresh Device"} onPress={devReset} testID="settings-dev-reset" />
         ) : null}

@@ -5,6 +5,8 @@ import { Repository, PendingReportJob } from "../storage/repository";
 import { DeepPrepApi } from "../api/deepprep";
 import { StoreKitService } from "../storekit/StoreKitService";
 import { Entitlement, InterviewDraft, Report, emptyDraft } from "../models/types";
+import { SCREENSHOT_MODE } from "../config/screenshotMode";
+import { SCREENSHOT_DRAFT, SCREENSHOT_ENTITLEMENT, SCREENSHOT_REPORTS } from "../mock/screenshotData";
 
 interface AppState {
   ready: boolean;
@@ -68,6 +70,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let stopStoreKitListener = () => {};
     (async () => {
+      if (SCREENSHOT_MODE) {
+        const id = "screenshot-device";
+        setDeviceId(id);
+        setOnboardingDone(true);
+        setFreeScanUsed(true);
+        setEntitlement(SCREENSHOT_ENTITLEMENT);
+        setDraftState(SCREENSHOT_DRAFT);
+        setReports(SCREENSHOT_REPORTS);
+        setReady(true);
+        return;
+      }
       const id = await Repository.getDeviceId();
       setDeviceId(id);
       setOnboardingDone(await Repository.isOnboardingDone());
@@ -104,6 +117,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const unlockPro = useCallback(async () => {
+    if (SCREENSHOT_MODE) {
+      setEntitlement(SCREENSHOT_ENTITLEMENT);
+      return SCREENSHOT_ENTITLEMENT;
+    }
     const result = await StoreKitService.purchase(deviceId);
     if (result.entitlement) {
       setEntitlement(result.entitlement);
@@ -118,6 +135,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [deviceId]);
 
   const restorePurchases = useCallback(async () => {
+    if (SCREENSHOT_MODE) {
+      setEntitlement(SCREENSHOT_ENTITLEMENT);
+      return SCREENSHOT_ENTITLEMENT;
+    }
     const result = await StoreKitService.restore(deviceId);
     if (result.entitlement) {
       setEntitlement(result.entitlement);

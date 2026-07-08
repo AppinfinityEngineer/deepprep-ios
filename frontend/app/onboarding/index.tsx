@@ -181,14 +181,14 @@ function StepContent(props: any) {
     case 4:
       return (
         <StepBlock title="Which company & role?" subtitle="This personalises your intel.">
-          <TextField label="Company" value={draft.company} onChangeText={(t: string) => setDraft({ company: t })} placeholder="Confused.com" testID="input-company" autoCapitalize="words" />
-          <TextField label="Role title" value={draft.role} onChangeText={(t: string) => setDraft({ role: t })} placeholder="Senior Data Engineer" testID="input-role" autoCapitalize="words" />
+          <TextField label="Company" value={draft.company} onChangeText={(t: string) => setDraft({ company: t })} placeholder="Company name" testID="input-company" autoCapitalize="words" />
+          <TextField label="Role title" value={draft.role} onChangeText={(t: string) => setDraft({ role: t })} placeholder="Role you’re interviewing for" testID="input-role" autoCapitalize="words" />
         </StepBlock>
       );
     case 5:
       return (
         <StepBlock title="When is your interview?">
-          <TextField label="Interview date" value={draft.date || ""} onChangeText={(t: string) => setDraft({ date: t })} placeholder="e.g. 30 May 2026" testID="input-date" />
+          <TextField label="Interview date" value={draft.date || ""} onChangeText={(t: string) => setDraft({ date: t })} placeholder="Interview date" testID="input-date" />
           <Text style={[styles.label, { marginTop: spacing.md }]}>What is your biggest concern?</Text>
           <View style={styles.chipsWrap}>
             {CONCERNS.map((c) => (
@@ -202,9 +202,9 @@ function StepContent(props: any) {
         <StepBlock title="Who will you be speaking with?" subtitle="Add any known information. Up to 4 interviewers.">
           {interviewers.map((iv: Interviewer, idx: number) => (
             <View key={idx} style={styles.ivCard} testID={`interviewer-card-${idx}`}>
-              <TextField label={`Interviewer ${idx + 1}`} value={iv.name} onChangeText={(t: string) => updateInterviewer(idx, { name: t })} placeholder="Nick Sharp" testID={`interviewer-name-${idx}`} autoCapitalize="words" />
-              <TextField label="Title (optional)" value={iv.title || ""} onChangeText={(t: string) => updateInterviewer(idx, { title: t })} placeholder="Director of Data & Technology" testID={`interviewer-title-${idx}`} />
-              <TextField label="LinkedIn / profile URL (optional)" value={iv.linkedinUrl || ""} onChangeText={(t: string) => updateInterviewer(idx, { linkedinUrl: t })} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID={`interviewer-url-${idx}`} />
+              <TextField label={`Interviewer ${idx + 1}`} value={iv.name} onChangeText={(t: string) => updateInterviewer(idx, { name: t })} placeholder="Interviewer name" testID={`interviewer-name-${idx}`} autoCapitalize="words" />
+              <TextField label="Title (optional)" value={iv.title || ""} onChangeText={(t: string) => updateInterviewer(idx, { title: t })} placeholder="Interviewer job title" testID={`interviewer-title-${idx}`} />
+              <TextField label="LinkedIn / profile URL (optional)" value={iv.linkedinUrl || ""} onChangeText={(t: string) => updateInterviewer(idx, { linkedinUrl: t })} placeholder="Optional profile URL" autoCapitalize="none" autoCorrect={false} testID={`interviewer-url-${idx}`} />
             </View>
           ))}
           {interviewers.length < 4 ? (
@@ -218,7 +218,7 @@ function StepContent(props: any) {
     case 7:
       return (
         <StepBlock title="Paste the job description" subtitle="This helps DeepPrep generate role-specific questions and talking points.">
-          <TextArea value={draft.jdText || ""} onChangeText={(t: string) => setDraft({ jdText: t })} placeholder="Paste the description or key responsibilities here…" testID="input-jd" />
+          <TextArea value={draft.jdText || ""} onChangeText={(t: string) => setDraft({ jdText: t })} placeholder="Paste job description or key responsibilities" testID="input-jd" />
           <Text style={styles.uploadHint}>Paste-only for v1. No uploads are required for your scan.</Text>
         </StepBlock>
       );
@@ -228,8 +228,8 @@ function StepContent(props: any) {
           title="Add LinkedIn or profile evidence"
           subtitle="Fresh profile evidence helps DeepPrep avoid stale public data. In v1 this applies to the first interviewer in your scan. You can skip this."
         >
-          <TextField label="Paste LinkedIn / profile URL" value={draft.profileUrl || ""} onChangeText={(t: string) => setDraft({ profileUrl: t })} placeholder="https://linkedin.com/in/…" autoCapitalize="none" autoCorrect={false} testID="input-profile-url" />
-          <TextArea label="Paste profile text / headline" value={draft.profileText || ""} onChangeText={(t: string) => setDraft({ profileText: t })} placeholder="Paste the interviewer's current headline or profile text…" maxLength={4000} testID="input-profile-text" />
+          <TextField label="Paste LinkedIn / profile URL" value={draft.profileUrl || ""} onChangeText={(t: string) => setDraft({ profileUrl: t })} placeholder="Optional profile URL" autoCapitalize="none" autoCorrect={false} testID="input-profile-url" />
+          <TextArea label="Paste profile text / headline" value={draft.profileText || ""} onChangeText={(t: string) => setDraft({ profileText: t })} placeholder="Paste current profile headline or public profile text" maxLength={4000} testID="input-profile-text" />
           <Text style={styles.uploadHint}>DeepPrep labels this as user-supplied evidence, not externally verified data.</Text>
         </StepBlock>
       );

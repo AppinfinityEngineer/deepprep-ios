@@ -1,7 +1,8 @@
 {
   "cli": {
     "version": ">= 14.0.0",
-    "appVersionSource": "local"
+    "appVersionSource": "local",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
@@ -14,7 +15,8 @@
       "env": {
         "EXPO_PUBLIC_BACKEND_URL": "https://deepprep-ios-dev.onrender.com",
         "EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID": "deepprep_pro_weekly",
-        "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false"
+        "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false",
+        "EXPO_PUBLIC_SCREENSHOT_MODE": "false"
       },
       "autoIncrement": false
     },
@@ -27,7 +29,8 @@
       "env": {
         "EXPO_PUBLIC_BACKEND_URL": "https://deepprep-ios-dev.onrender.com",
         "EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID": "deepprep_pro_weekly",
-        "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false"
+        "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false",
+        "EXPO_PUBLIC_SCREENSHOT_MODE": "false"
       },
       "autoIncrement": false
     },
@@ -39,7 +42,8 @@
       "env": {
         "EXPO_PUBLIC_BACKEND_URL": "https://deepprep-ios-dev.onrender.com",
         "EXPO_PUBLIC_APPLE_WEEKLY_PRODUCT_ID": "deepprep_pro_weekly",
-        "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false"
+        "EXPO_PUBLIC_DEV_MOCK_UNLOCK": "false",
+        "EXPO_PUBLIC_SCREENSHOT_MODE": "false"
       },
       "autoIncrement": false
     }

@@ -1,0 +1,147 @@
+import { Entitlement, InterviewDraft, Report } from "../models/types";
+
+export const SCREENSHOT_ENTITLEMENT: Entitlement = {
+  active: true,
+  entitlementId: "deepprep_pro",
+  productId: "deepprep_pro_weekly",
+  creditsRemaining: 6,
+  introUsed: true,
+};
+
+export const SCREENSHOT_DRAFT: InterviewDraft = {
+  company: "Northstar Analytics",
+  role: "Senior Data Engineer",
+  date: "Tomorrow",
+  concerns: ["Technical depth", "The interviewer", "Talking points"],
+  interviewers: [
+    { name: "Maya Reed", title: "Head of Data Platform" },
+    { name: "Daniel Cross", title: "Engineering Manager" },
+  ],
+  jdText: "Senior data role focused on reliable pipelines, analytics delivery, and stakeholder communication.",
+};
+
+export const SCREENSHOT_FREE_SCAN_REPORT: Report = {
+  id: "screenshot-free-scan-001",
+  interviewId: "screenshot-interview-free-001",
+  generatedAt: "2026-07-08T09:00:00.000Z",
+  mode: "free_scan",
+  company: "Northstar Analytics",
+  role: "Senior Data Engineer",
+  executiveSummary: "DeepPrep found useful company and interviewer signals for a Senior Data Engineer interview.",
+  freeScanSummary: {
+    interviewerName: "Maya Reed",
+    interviewerTitle: "Head of Data Platform",
+    interviewerSignal: "Public-style demo signals suggest a data-platform leadership interviewer. Use this as preparation context, not a verified current-role claim.",
+    matchConfidence: 82,
+    matchLabel: "Strong demo match",
+    roleFreshness: "Medium",
+    currentRoleStatus: "Demo evidence only",
+    recommendedAction: "Prepare one concise story about improving pipeline reliability and one about influencing non-technical stakeholders.",
+    profileEvidenceUsed: false,
+    freshnessNote: "Screenshot mode uses fictional demo data only.",
+    keyInsights: [
+      "The company appears to care about dependable analytics delivery and clear operational reporting.",
+      "The role is likely to test pipeline design, data quality, and practical trade-offs.",
+      "The interviewer context points to platform reliability and stakeholder communication themes.",
+    ],
+    likelyQuestion: "Tell me about a time you improved the reliability of a data pipeline under pressure.",
+    talkingPoint: "Lead with a measurable example: problem, trade-off, technical action, and business result.",
+  },
+  companyBrief: {
+    summary: "Northstar Analytics is a fictional analytics platform company used for screenshots and demos.",
+    signals: ["Fictional public-style company signal", "Data platform growth theme", "Operational reporting focus"],
+    risks: ["Demo data only", "No real people or companies are represented"],
+    opportunities: ["Show reliability impact", "Explain stakeholder communication", "Prepare STAR examples"],
+  },
+  dossiers: [],
+  likelyQuestions: [],
+  talkingPoints: [],
+  dayOfBrief: "Who: a fictional data platform panel. Cares about: reliability, clarity, and practical trade-offs. Say: concise measurable examples. Avoid: vague architecture claims. Final reminder: ask clarifying questions before designing.",
+  confidenceNotes: ["Screenshot mode uses fictional demo data only."],
+  freshnessNotes: ["No live public search is used in screenshot mode."],
+  sourceNotes: [{ label: "Screenshot mode", detail: "Fictional data only. No real people, companies, or live APIs." }],
+  cost: { searchQueryCount: 0, searchResultCount: 0, llmProvider: "demo", llmModel: "demo", inputTokens: 0, outputTokens: 0, estimatedSearchCostGbp: 0, estimatedLlmCostGbp: 0, estimatedTotalCostGbp: 0, generationSeconds: 1 },
+};
+
+export const SCREENSHOT_REPORT: Report = {
+  id: "screenshot-report-001",
+  interviewId: "screenshot-interview-001",
+  generatedAt: "2026-07-08T09:05:00.000Z",
+  mode: "full",
+  company: "Northstar Analytics",
+  role: "Senior Data Engineer",
+  executiveSummary: "You are preparing for a Senior Data Engineer interview at a fictional analytics company. Your strongest edge is to connect technical pipeline decisions to reliability, customer trust, and measurable business impact.",
+  freeScanSummary: null,
+  companyBrief: {
+    summary: "Northstar Analytics is a fictional company used for App Store screenshots. It represents a fast-growing analytics platform with a focus on dependable reporting, data quality, and scalable infrastructure.",
+    signals: [
+      "The role likely values reliable data pipelines and clear ownership of data quality.",
+      "A senior candidate should be ready to discuss trade-offs, monitoring, and stakeholder communication.",
+      "The panel may test whether you can translate technical choices into business outcomes.",
+    ],
+    risks: [
+      "Over-indexing on tools instead of outcomes.",
+      "Giving architecture answers without clarifying data volume, latency, or quality requirements.",
+    ],
+    opportunities: [
+      "Use one strong STAR story about reducing failures or improving reporting trust.",
+      "Ask what data reliability metric matters most to the team.",
+      "Show how you balance speed, quality, and maintainability.",
+    ],
+  },
+  dossiers: [
+    {
+      name: "Maya Reed",
+      title: "Head of Data Platform",
+      matchConfidence: "High",
+      roleFreshness: "High",
+      currentRoleStatus: "Fictional demo profile",
+      recommendedAction: "Prepare for practical questions about pipeline reliability, ownership, and communicating trade-offs.",
+      profileSummary: "Maya Reed is a fictional screenshot-mode interviewer. Her profile represents a data-platform leader who cares about reliable systems, clear prioritisation, and measurable delivery.",
+      careerPath: ["Led platform reliability work", "Scaled analytics delivery", "Partnered with product and operations teams"],
+      likelyPriorities: ["Data reliability", "Clear incident ownership", "Useful reporting for stakeholders"],
+      interviewStyle: "Likely practical and evidence-led, with follow-up questions on trade-offs and impact.",
+      questionsTheyMayAsk: ["How do you design a pipeline for reliability?", "How do you prove data quality improved?", "How do you handle conflicting stakeholder priorities?"],
+      goodTopics: ["Reliability metrics", "Data contracts", "Monitoring and alerting"],
+      avoid: ["Tool-name dropping without outcomes", "Ignoring stakeholder needs"],
+      sourceNotes: ["Fictional demo profile for screenshots only"],
+      confidenceNotes: ["No real person is represented"],
+    },
+    {
+      name: "Daniel Cross",
+      title: "Engineering Manager",
+      matchConfidence: "Medium",
+      roleFreshness: "High",
+      currentRoleStatus: "Fictional demo profile",
+      recommendedAction: "Have concise examples ready on collaboration, delivery pressure, and improving team processes.",
+      profileSummary: "Daniel Cross is a fictional screenshot-mode interviewer representing an engineering manager focused on team delivery and maintainable systems.",
+      careerPath: ["Managed cross-functional delivery", "Improved engineering process", "Partnered with data teams"],
+      likelyPriorities: ["Communication", "Delivery judgement", "Maintainability"],
+      interviewStyle: "Likely behavioural and delivery-focused, with emphasis on ownership and collaboration.",
+      questionsTheyMayAsk: ["Tell me about a time you had to make a trade-off.", "How do you communicate risk to stakeholders?", "How do you work with product teams?"],
+      goodTopics: ["Ownership", "Trade-offs", "Clear communication"],
+      avoid: ["Blaming other teams", "Overly theoretical answers"],
+      sourceNotes: ["Fictional demo profile for screenshots only"],
+      confidenceNotes: ["No real person is represented"],
+    },
+  ],
+  likelyQuestions: [
+    { question: "Can you describe a data pipeline you improved and the measurable impact?", why: "Tests technical depth and outcome focus.", starAngle: "Use STAR: reliability issue, your action, metrics before/after, business impact.", confidence: "high" },
+    { question: "How would you design data quality checks for a critical reporting pipeline?", why: "Senior data roles often own trust in reporting.", starAngle: "Discuss validation layers, monitoring, ownership, and escalation.", confidence: "high" },
+    { question: "Tell me about a time you had to balance speed and maintainability.", why: "Tests judgement under delivery pressure.", starAngle: "Show the trade-off, why it mattered, and how you reduced future risk.", confidence: "medium" },
+    { question: "How do you explain a complex technical issue to a non-technical stakeholder?", why: "Data engineers often work across teams.", starAngle: "Use a story where communication changed the outcome.", confidence: "medium" },
+    { question: "What would you check first if a dashboard suddenly became unreliable?", why: "Tests troubleshooting and operational thinking.", starAngle: "Walk through logs, upstream data, schema changes, tests, and incident comms.", confidence: "high" },
+  ],
+  talkingPoints: [
+    { point: "Reliability with measurable impact", advice: "Mention specific before/after metrics such as failure rate, latency, or manual fixes reduced." },
+    { point: "Stakeholder trust", advice: "Show how you helped non-technical teams make better decisions from cleaner data." },
+    { point: "Pragmatic architecture", advice: "Explain trade-offs rather than presenting one perfect design." },
+  ],
+  dayOfBrief: "Who you are meeting: a fictional data platform panel. What they may care about: reliable pipelines, data quality, maintainability, and communication. Likely questions: pipeline design, troubleshooting, stakeholder examples, and trade-offs. What to say: lead with measurable outcomes and explain your decisions clearly. What to avoid: vague tool lists, unsupported claims, or overly complex architecture. Final reminder: pause, clarify requirements, then answer with a structured example.",
+  confidenceNotes: ["Screenshot mode uses fictional demo data only.", "No live public search, real people, or real companies are shown."],
+  freshnessNotes: ["All screenshot-mode profiles are fictional and current by design."],
+  sourceNotes: [{ label: "Screenshot mode", detail: "Fictional data only. No real people, companies, or live APIs." }],
+  cost: { searchQueryCount: 0, searchResultCount: 0, llmProvider: "demo", llmModel: "demo", inputTokens: 0, outputTokens: 0, estimatedSearchCostGbp: 0, estimatedLlmCostGbp: 0, estimatedTotalCostGbp: 0, generationSeconds: 1 },
+};
+
+export const SCREENSHOT_REPORTS: Report[] = [SCREENSHOT_REPORT];

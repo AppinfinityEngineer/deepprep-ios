@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { Text, View, StyleSheet, ScrollView, Pressable, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,6 +9,7 @@ import { Button } from "@/src/components/ui";
 import { useApp } from "@/src/state/AppContext";
 import { StoreKitService, type DeepPrepProduct } from "@/src/storekit/StoreKitService";
 import { HapticsService } from "@/src/haptics/HapticsService";
+import { APPLE_STANDARD_EULA_URL, PRIVACY_POLICY_URL } from "@/src/config/legal";
 
 const FEATURES = [
   "Full reports & interviewer dossiers",
@@ -90,7 +91,7 @@ export default function Paywall() {
           <Text style={styles.planName}>DeepPrep Pro</Text>
           <Text style={styles.price}>{product?.recurringLabel || StoreKitService.pricing.displayLine}</Text>
           <Text style={styles.creditNote}>Includes 6 Intel Credits every week.</Text>
-          <Text style={styles.priceSub}>Subscription renews automatically. Cancel anytime in your Apple account settings.</Text>
+          <Text style={styles.priceSub}>Subscription renews automatically. Payment is charged to your Apple ID. Renews unless cancelled at least 24 hours before the end of the current period. Manage or cancel in Apple account settings.</Text>
         </View>
       </ScrollView>
 
@@ -105,13 +106,13 @@ export default function Paywall() {
           <Text style={styles.restoreText}>{restoring ? "Restoring…" : "Restore Purchases"}</Text>
         </Pressable>
         <Text style={styles.legal}>
-          By continuing, you agree to our{" "}
-          <Text style={styles.link} onPress={() => router.push("/legal/terms")}>
-            Terms of Service
-          </Text>{" "}
-          and{" "}
-          <Text style={styles.link} onPress={() => router.push("/legal/privacy")}>
+          DeepPrep Pro costs £7.99/week and includes 6 Intel Credits every week. By continuing, you agree to the {" "}
+          <Text style={styles.link} onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
             Privacy Policy
+          </Text>{" "}
+          and {" "}
+          <Text style={styles.link} onPress={() => Linking.openURL(APPLE_STANDARD_EULA_URL)}>
+            Apple Standard EULA
           </Text>
           .
         </Text>
