@@ -63,6 +63,11 @@ async def sync(device_id: str, receipt, product_id, dev_mock_unlock: bool) -> Di
     ent["lastReceiptSyncedAt"] = now_iso() if receipt else ent.get("lastReceiptSyncedAt")
     ent["updatedAt"] = now_iso()
     await db.entitlements.update_one({"_id": device_id}, {"$set": ent}, upsert=True)
+    try:
+        from .live_ops_service import record_purchase_from_entitlement
+        await record_purchase_from_entitlement(device_id=device_id, product_id=valid_product_id, receipt=receipt, source="entitlement_sync", dev_mock=dev_unlock_allowed)
+    except Exception:
+        pass
     return ent
 
 

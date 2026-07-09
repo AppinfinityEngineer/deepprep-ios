@@ -35,6 +35,7 @@ export default function ScanScreen() {
           return;
         }
         const report = await DeepPrepApi.freeScanCreate(deviceId, draft);
+        DeepPrepApi.trackLiveOpsEvent(deviceId, "prep_profile_generated", { company: draft.company, role: draft.role, reportId: report.id }).catch(() => {});
         setFreeScanReport(report);
         await markFreeScanUsed(report.id);
         setReportReady(true);

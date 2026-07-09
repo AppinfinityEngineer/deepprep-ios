@@ -55,6 +55,11 @@ class Settings:
         self.apple_private_key: str = os.environ.get("APPLE_PRIVATE_KEY", "")
         self.app_attest_enabled: bool = _flag("APP_ATTEST_ENABLED", "false")
 
+        # Private LiveOps / Founder notification settings. Never commit real tokens.
+        self.admin_token: str = os.environ.get("ADMIN_TOKEN", "").strip()
+        self.pushover_app_token: str = os.environ.get("PUSHOVER_APP_TOKEN", "").strip()
+        self.pushover_user_key: str = os.environ.get("PUSHOVER_USER_KEY", "").strip()
+
         # Local-only purchase/testing escape hatch. Never allow this outside development.
         self.allow_dev_mock_unlock: bool = self.app_env == "development" and _flag("ALLOW_DEV_MOCK_UNLOCK", "true")
 

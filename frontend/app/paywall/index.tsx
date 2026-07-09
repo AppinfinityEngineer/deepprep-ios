@@ -10,6 +10,7 @@ import { useApp } from "@/src/state/AppContext";
 import { StoreKitService, type DeepPrepProduct } from "@/src/storekit/StoreKitService";
 import { HapticsService } from "@/src/haptics/HapticsService";
 import { APPLE_STANDARD_EULA_URL, PRIVACY_POLICY_URL } from "@/src/config/legal";
+import { DeepPrepApi } from "@/src/api/deepprep";
 
 const FEATURES = [
   "Full reports & interviewer dossiers",
@@ -20,25 +21,27 @@ const FEATURES = [
 
 export default function Paywall() {
   const router = useRouter();
-  const { completeOnboarding, unlockPro, restorePurchases } = useApp();
+  const { deviceId, completeOnboarding, unlockPro, restorePurchases } = useApp();
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [product, setProduct] = useState<DeepPrepProduct | null>(null);
 
   useEffect(() => {
+    if (deviceId) DeepPrepApi.trackLiveOpsEvent(deviceId, "paywall_viewed", { productId: StoreKitService.productId }).catch(() => {});
     let mounted = true;
     StoreKitService.loadProducts().then((items) => {
       if (mounted) setProduct(items[0] || null);
     }).catch(() => {});
     return () => { mounted = false; };
-  }, []);
+  }, [deviceId]);
 
   const onContinue = async () => {
     setLoading(true);
     setMsg(null);
     await HapticsService.heavy();
     try {
+      DeepPrepApi.trackLiveOpsEvent(deviceId, "purchase_started", { productId: StoreKitService.productId, plan: "weekly" }).catch(() => {});
       const ent = await unlockPro();
       await completeOnboarding();
       if (ent.active) {
@@ -47,6 +50,7 @@ export default function Paywall() {
         setMsg("Apple may still be finishing the purchase. Tap Restore Purchases in a moment if your report does not unlock automatically.");
       }
     } catch {
+      DeepPrepApi.trackLiveOpsEvent(deviceId, "purchase_failed", { productId: StoreKitService.productId, plan: "weekly" }).catch(() => {});
       setMsg("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -59,6 +63,7 @@ export default function Paywall() {
     try {
       const ent = await restorePurchases();
       if (ent.active) {
+        DeepPrepApi.trackLiveOpsEvent(deviceId, "restore_success", { productId: StoreKitService.productId, plan: "weekly" }).catch(() => {});
         await completeOnboarding();
         router.replace("/(tabs)");
       } else {

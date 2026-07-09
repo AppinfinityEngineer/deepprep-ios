@@ -97,6 +97,9 @@ export const DeepPrepApi = {
 
   privacyDelete: (deviceId: string) => http.post<{ deleted: boolean }>("/privacy/delete", { deviceId }),
 
+  trackLiveOpsEvent: (deviceId: string, eventType: string, metadata: Record<string, unknown> = {}) =>
+    http.post<{ ok: boolean }>("/live-ops/event", { deviceId, eventType, source: "app", metadata }),
+
   devResetFreeScan: (deviceId: string) =>
     http.post<{ ok: boolean; deviceId: string }>("/dev/reset-free-scan", { deviceId }),
 

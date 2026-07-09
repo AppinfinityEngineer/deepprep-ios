@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -7,6 +7,7 @@ import { ScreenContainer, Button, Card, Badge, SectionTitle, Bullet } from "@/sr
 import { ConfidenceMeter } from "@/src/components/ConfidenceMeter";
 import { InterviewerAvatar } from "@/src/components/InterviewerAvatar";
 import { useApp } from "@/src/state/AppContext";
+import { DeepPrepApi } from "@/src/api/deepprep";
 
 function toneForStatus(status: string) {
   const s = status.toLowerCase();
@@ -18,8 +19,15 @@ function toneForStatus(status: string) {
 
 export default function ResultScreen() {
   const router = useRouter();
-  const { freeScanReport, draft } = useApp();
+  const { deviceId, freeScanReport, draft } = useApp();
+  const previewTrackedRef = useRef(false);
   const s = freeScanReport?.freeScanSummary;
+
+  useEffect(() => {
+    if (!deviceId || !freeScanReport || previewTrackedRef.current) return;
+    previewTrackedRef.current = true;
+    DeepPrepApi.trackLiveOpsEvent(deviceId, "preview_viewed", { company: freeScanReport.company, role: freeScanReport.role, reportId: freeScanReport.id }).catch(() => {});
+  }, [deviceId, freeScanReport]);
 
   if (!freeScanReport || !s) {
     return (

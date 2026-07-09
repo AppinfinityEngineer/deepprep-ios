@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Text,
   View,
@@ -21,6 +21,7 @@ import { RadarMark } from "@/src/components/RadarMark";
 import { useApp } from "@/src/state/AppContext";
 import { Interviewer } from "@/src/models/types";
 import { HapticsService } from "@/src/haptics/HapticsService";
+import { DeepPrepApi } from "@/src/api/deepprep";
 
 const SITUATIONS = ["Actively interviewing", "Applying now", "Final round coming up", "Exploring roles"];
 const LEVELS = ["Junior", "Mid-level", "Senior", "Lead / Principal", "Manager / Director"];
@@ -31,14 +32,23 @@ const TOTAL_STEPS = 9;
 
 export default function Onboarding() {
   const router = useRouter();
-  const { draft, setDraft } = useApp();
+  const { deviceId, draft, setDraft } = useApp();
   const [step, setStep] = useState(0);
   const [interviewers, setInterviewers] = useState<Interviewer[]>([{ name: "" }]);
+  const startedTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!deviceId || startedTrackedRef.current) return;
+    startedTrackedRef.current = true;
+    DeepPrepApi.trackLiveOpsEvent(deviceId, "onboarding_started", { step: 0 }).catch(() => {});
+  }, [deviceId]);
 
   const next = () => {
     HapticsService.tap();
+    DeepPrepApi.trackLiveOpsEvent(deviceId, "onboarding_step_completed", { step }).catch(() => {});
     if (step === 8) {
       setDraft({ interviewers: interviewers.filter((i) => i.name.trim()) });
+      DeepPrepApi.trackLiveOpsEvent(deviceId, "onboarding_completed", { totalSteps: TOTAL_STEPS }).catch(() => {});
       router.push("/onboarding/scan");
       return;
     }

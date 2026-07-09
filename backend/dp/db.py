@@ -22,6 +22,8 @@ reports = db["reports"]
 entitlements = db["entitlements"]
 usage = db["usage"]
 cost_events = db["cost_events"]
+live_ops_events = db["live_ops_events"]
+live_ops_notification_log = db["live_ops_notification_log"]
 
 
 def close() -> None:

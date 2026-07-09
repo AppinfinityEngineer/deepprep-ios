@@ -52,6 +52,11 @@ async def create(body: FreeScanCreateIn, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail={"message": str(e), "reason": "generation_failed"})
     await security.record_cost_event(device_id=body.deviceId, kind="free_scan", report_id=report.id, interview_id=getattr(report, "interviewId", None), cost=report.cost.model_dump() if hasattr(report.cost, "model_dump") else dict(report.cost or {}))
+    try:
+        from .services.live_ops_service import record_event
+        await record_event(event_type="prep_profile_generated", device_id=body.deviceId, source="backend", metadata={"company": body.company, "role": body.role, "reportId": report.id}, notify_purchase=False)
+    except Exception:
+        pass
     return report.model_dump()
 
 
